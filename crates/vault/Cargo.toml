@@ -1,0 +1,14 @@
+[package]
+name = "cloudnode-vault"
+description = "CloudNode vault: the encrypted, master-password-protected store on the user's disk"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+cloudnode-core = { workspace = true }

@@ -1,0 +1,104 @@
+import { Theme, Metrics } from "theme.slint";
+
+// The search box at the top of the sidebar. It will filter hosts and keys as you type (M4).
+component SearchField inherits Rectangle {
+    in-out property <string> text <=> input.text;
+
+    height: Metrics.field-height;
+    border-radius: Metrics.radius-md;
+    border-width: 1px;
+    border-color: input.has-focus ? Theme.accent : Theme.line;
+    background: Theme.field-bg;
+
+    input := TextInput {
+        x: Metrics.space-sm;
+        y: 0px;
+        width: parent.width - 2 * Metrics.space-sm;
+        height: parent.height;
+        vertical-alignment: center;
+        single-line: true;
+        color: Theme.ink;
+        selection-background-color: Theme.selection;
+        font-size: Metrics.font-body;
+    }
+
+    if root.text == "": Text {
+        x: Metrics.space-sm;
+        y: 0px;
+        width: parent.width - 2 * Metrics.space-sm;
+        height: parent.height;
+        vertical-alignment: center;
+        text: @tr("Search hosts and keys");
+        color: Theme.faint;
+        font-size: Metrics.font-body;
+    }
+}
+
+component SectionHeader inherits Text {
+    color: Theme.faint;
+    font-size: Metrics.font-caption;
+    font-weight: 600;
+}
+
+// A titled list. Until the vault is wired up (M1) every list shows its empty state.
+component Section inherits Rectangle {
+    in property <string> title;
+    in property <string> empty-text;
+
+    VerticalLayout {
+        spacing: Metrics.space-xs;
+
+        SectionHeader {
+            text: root.title;
+        }
+
+        Text {
+            text: root.empty-text;
+            color: Theme.muted;
+            font-size: Metrics.font-body;
+            wrap: word-wrap;
+        }
+    }
+}
+
+// Search, the host lists, and Key Management at the bottom.
+export component Sidebar inherits Rectangle {
+    background: Theme.sidebar-bg;
+
+    VerticalLayout {
+        padding: Metrics.space-md;
+        spacing: Metrics.space-lg;
+
+        SearchField { }
+
+        Section {
+            title: @tr("Favorites");
+            empty-text: @tr("Star a host to keep it here.");
+        }
+
+        Section {
+            title: @tr("Connected");
+            empty-text: @tr("No open sessions.");
+        }
+
+        Section {
+            title: @tr("Hosts");
+            empty-text: @tr("No hosts yet.");
+        }
+
+        // Pushes Key Management to the bottom of the sidebar.
+        Rectangle {
+            vertical-stretch: 1;
+        }
+
+        Rectangle {
+            height: 1px;
+            background: Theme.line;
+        }
+
+        Section {
+            title: @tr("Keys");
+            empty-text: @tr("No keys yet.");
+        }
+    }
+}

@@ -2,3 +2,13 @@
 info/
 # Other files
 *.DS_Store
+*~
+
+# Build output
+/target
+target/
+/dist
+
+# Local-only notes and plans
+plan/
+plans/

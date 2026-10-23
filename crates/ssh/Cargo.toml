@@ -1,0 +1,14 @@
+[package]
+name = "cloudnode-ssh"
+description = "CloudNode SSH: sessions, host keys, sign-in and the remote shell (russh on Tokio)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+cloudnode-core = { workspace = true }

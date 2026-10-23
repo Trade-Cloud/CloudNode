@@ -1,0 +1,23 @@
+CloudNode
+Copyright (c) 2026 TradeCloud and the CloudNode contributors.
+Licensed under the MIT License or the Apache License, Version 2.0, at your option
+(LICENSE-MIT, LICENSE-APACHE).
+
+The TradeCloud name, the TradeCloud logo and wordmark, and the CloudNode cheetah mark
+(docs/brand/) are trademarks of TradeCloud. They are NOT open source and are NOT covered by the
+MIT or Apache-2.0 license above. This includes everywhere CloudNode shows them, such as the app
+icon made from the cheetah mark (assets/app-icon/). Their terms are in docs/brand/LICENSE-brand.txt;
+forks and modified versions must remove them.
+
+Third-party software
+
+CloudNode's desktop app is built with Slint (https://slint.dev), used under the Slint
+Royalty-free Desktop, Mobile, and Web Applications License 2.0. That license requires an
+attribution: Slint's "About Slint" element in the application's About window, or the Slint
+attribution badge on the page the application is downloaded from. Every release must carry one
+of the two.
+
+Third-party assets
+
+Every bundled asset (fonts, icons, images) is listed with its author, source and license in
+ATTRIBUTION.md, and keeps its license file beside it.

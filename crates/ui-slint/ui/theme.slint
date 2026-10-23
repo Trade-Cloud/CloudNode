@@ -1,0 +1,53 @@
+// Colour tokens. The values come from Rust (`cloudnode_core::theme::Tokens`, set by
+// `cloudnode_ui_slint::theme::apply` before the window opens), so the window, the TUI and the
+// terminal renderer share one palette. Never write a colour literal in any other .slint file.
+export global Theme {
+    in property <color> window-bg;
+    in property <color> sidebar-bg;
+    in property <color> surface;
+    in property <color> field-bg;
+    in property <color> hover;
+    in property <color> ink;
+    in property <color> ink-strong;
+    in property <color> muted;
+    in property <color> faint;
+    in property <color> line;
+    in property <color> line-strong;
+    in property <color> accent;
+    in property <color> accent-hover;
+    in property <color> accent-ink;
+    in property <color> on-accent;
+    in property <color> selection;
+    in property <color> good;
+    in property <color> warn;
+    in property <color> bad;
+    in property <color> terminal-bg;
+    in property <color> terminal-fg;
+}
+
+// Sizes, radii and type. Only the window uses them, so they live here rather than in Rust.
+export global Metrics {
+    out property <length> radius-sm: 6px;
+    out property <length> radius-md: 8px;
+    out property <length> radius-lg: 12px;
+
+    out property <length> space-xs: 4px;
+    out property <length> space-sm: 8px;
+    out property <length> space-md: 12px;
+    out property <length> space-lg: 16px;
+    out property <length> space-xl: 24px;
+
+    out property <length> sidebar-width: 260px;
+    out property <length> row-height: 28px;
+    out property <length> field-height: 28px;
+
+    // Inter for the interface and JetBrains Mono for the terminal (both SIL OFL 1.1). Until they
+    // are bundled (M4 in ROADMAP.md) Slint falls back to the system's faces.
+    out property <string> font-ui: "Inter";
+    out property <string> font-mono: "JetBrains Mono";
+    out property <length> font-caption: 11px;
+    out property <length> font-body: 13px;
+    out property <length> font-title: 15px;
+    out property <length> font-display: 22px;
+    out property <length> font-terminal: 13px;
+}

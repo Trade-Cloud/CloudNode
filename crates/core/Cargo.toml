@@ -1,0 +1,15 @@
+[package]
+name = "cloudnode-core"
+description = "CloudNode core: hosts, groups, key descriptions and colour tokens (pure data, no I/O)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+serde = { workspace = true }
+thiserror = { workspace = true }

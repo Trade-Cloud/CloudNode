@@ -1,0 +1,126 @@
+name: Release
+
+# Every push to main builds CloudNode for macOS, Windows and Linux and puts the files on a DRAFT
+# GitHub Release, "CloudNode v<version>", with the version from [workspace.package] in Cargo.toml.
+# Nothing is published automatically: a maintainer checks the draft, writes the notes and
+# publishes it, which creates the v<version> tag. Another push with the same version replaces the
+# draft's files; a version that is already published stops the run until Cargo.toml is bumped.
+#
+# Only main runs this. Day-to-day work happens on develop, which has no automatic builds
+# (docs/releasing.md).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Two pushes in a row build one after the other, so they never upload to the same draft at once.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+  GH_REPO: ${{ github.repository }}
+
+jobs:
+  draft:
+    name: Prepare the draft release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Read the version from Cargo.toml
+        id: version
+        run: |
+          version=$(sed -n '/^\[workspace.package\]/,/^\[/s/^version = "\(.*\)"/\1/p' Cargo.toml)
+          if [ -z "$version" ]; then
+            echo "::error::no version in [workspace.package] in Cargo.toml"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+
+      - name: Create the draft, or reuse it
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          notes="Built from ${GITHUB_SHA}. Check the files, write the release notes, then publish."
+          if draft=$(gh release view "$TAG" --json isDraft --jq .isDraft 2>/dev/null); then
+            if [ "$draft" != "true" ]; then
+              echo "::error::CloudNode $TAG is already published. Bump the version (cargo xtask version set X.Y.Z) before pushing to main."
+              exit 1
+            fi
+            echo "Reusing the draft for $TAG: its files will be replaced."
+            gh release edit "$TAG" --draft --target "$GITHUB_SHA" --notes "$notes"
+          else
+            gh release create "$TAG" --draft --target "$GITHUB_SHA" --title "CloudNode $TAG" --notes "$notes"
+          fi
+
+  build:
+    name: Build (${{ matrix.name }})
+    needs: draft
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macos-universal
+            os: macos-latest
+          - name: windows-x64
+            os: windows-latest
+          # The oldest supported Ubuntu, so the binaries run on glibc 2.35 and newer.
+          - name: linux-x86_64
+            os: ubuntu-22.04
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ needs.draft.outputs.tag }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install the libraries Slint needs (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libfontconfig1-dev libfreetype-dev libxkbcommon-dev libwayland-dev \
+            libx11-dev libxcursor-dev libxrandr-dev libxi-dev libgl1-mesa-dev
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          key: release-${{ matrix.name }}
+
+      - name: Build and package
+        shell: bash
+        run: packaging/package.sh
+
+      - name: Upload to the draft
+        shell: bash
+        run: gh release upload "$TAG" dist/* --clobber
+
+  checksums:
+    name: Checksums
+    needs: [draft, build]
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ needs.draft.outputs.tag }}
+    steps:
+      - name: Write and upload SHA256SUMS.txt
+        run: |
+          mkdir dist
+          cd dist
+          gh release download "$TAG" --pattern '*'
+          rm -f SHA256SUMS.txt
+          sha256sum -- * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+          gh release upload "$TAG" SHA256SUMS.txt --clobber

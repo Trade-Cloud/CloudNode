@@ -1,0 +1,39 @@
+import { Theme, Metrics } from "theme.slint";
+
+// Where the session tabs and terminals go (M3 and M4). Until a session is open it says how to
+// start one.
+export component SessionArea inherits Rectangle {
+    background: Theme.terminal-bg;
+
+    VerticalLayout {
+        alignment: center;
+        spacing: Metrics.space-sm;
+
+        // The product name is never translated.
+        Text {
+            text: "CloudNode";
+            horizontal-alignment: center;
+            color: Theme.ink-strong;
+            font-size: Metrics.font-display;
+            font-weight: 600;
+        }
+
+        HorizontalLayout {
+            alignment: center;
+
+            Rectangle {
+                width: 32px;
+                height: 2px;
+                border-radius: 1px;
+                background: Theme.accent;
+            }
+        }
+
+        Text {
+            text: @tr("Pick a host in the sidebar to open a session.");
+            horizontal-alignment: center;
+            color: Theme.muted;
+            font-size: Metrics.font-body;
+        }
+    }
+}

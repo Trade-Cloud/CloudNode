@@ -1,0 +1,47 @@
+TradeCloud brand assets: license
+
+The TradeCloud name, the TradeCloud logo and wordmark, and the CloudNode cheetah mark (the
+"TradeCloud Marks"), in every colour, size and format, including the CloudNode app icon made from
+the cheetah mark, are owned by TradeCloud. They are trademarks and are NOT open source. They are
+not covered by CloudNode's MIT OR Apache-2.0 license, and nothing in that license, in NOTICE or in
+any other file of this repository grants any right to them.
+
+Where they are
+
+  - docs/brand/        the supplied brand files
+  - assets/app-icon/   the CloudNode app icon, rendered from the cheetah mark
+
+Permission
+
+TradeCloud grants a limited, non-exclusive, non-transferable, revocable, royalty-free permission
+to use the TradeCloud Marks only:
+
+  1. as part of copies of this repository; and
+  2. within CloudNode itself, its documentation and its official builds, to identify CloudNode as
+     made by TradeCloud.
+
+Conditions
+
+The permission holds only while every one of these is true:
+
+  - The marks are used exactly as supplied. Do not redraw, recolour, crop, stretch, rotate,
+    animate, outline or add effects to them, extract parts of them, or combine them with any
+    other name, mark or artwork.
+  - They are used only in the context of CloudNode, and only to say that TradeCloud makes it.
+    They must never suggest that TradeCloud made, sponsors, endorses, certifies or supports any
+    other product, service, fork, modified version, organization or person.
+  - Neither the marks nor the TradeCloud name appear in the name, logo, icon, domain, social
+    media handle, app-store listing, advertising or marketing of anything other than CloudNode.
+
+Forks and modified versions
+
+If you distribute or publish a modified version of CloudNode, or any work derived from it, you
+must remove the TradeCloud Marks from it (or replace them with your own) and must not present it
+as a TradeCloud product. You may say, in plain text, that your work is based on CloudNode by
+TradeCloud. A fork kept only to propose changes back to this repository may keep the marks
+unchanged.
+
+Everything else
+
+Any use not expressly permitted here needs prior written permission from TradeCloud. The
+permission ends automatically for anyone who breaks these terms. All other rights are reserved.

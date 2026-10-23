@@ -1,0 +1,24 @@
+import { Theme, Metrics } from "theme.slint";
+import { Sidebar } from "sidebar.slint";
+import { SessionArea } from "session.slint";
+
+// Everything inside the window: the sidebar, a hairline, and the sessions.
+export component Shell inherits Rectangle {
+    background: Theme.window-bg;
+
+    HorizontalLayout {
+        Sidebar {
+            width: Metrics.sidebar-width;
+        }
+
+        // The hairline between the sidebar and the sessions.
+        Rectangle {
+            width: 1px;
+            background: Theme.line;
+        }
+
+        SessionArea {
+            horizontal-stretch: 1;
+        }
+    }
+}

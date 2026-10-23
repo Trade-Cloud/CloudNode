@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=CloudNode
+GenericName=SSH Client
+Comment=Fast, open-source SSH client by TradeCloud
+Exec=cloudnode
+Icon=com.tradecloud.cloudnode
+Terminal=false
+Categories=Network;RemoteAccess;
+Keywords=ssh;terminal;server;remote;

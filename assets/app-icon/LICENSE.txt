@@ -1,0 +1,5 @@
+The CloudNode app icon (every file in this directory except README.md and this file) is rendered
+from the CloudNode cheetah mark, a trademark of TradeCloud.
+
+It is NOT open source and is NOT covered by CloudNode's MIT OR Apache-2.0 license. It may be used
+only as described in docs/brand/LICENSE-brand.txt. Forks and modified versions must remove it.

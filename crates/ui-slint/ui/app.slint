@@ -1,0 +1,23 @@
+import { Metrics } from "theme.slint";
+import { Shell } from "shell.slint";
+
+// Rust sets the colours on the Theme global (`theme::apply`), so the main file has to export it.
+// This re-export is the only mention of Theme here: the window's contents use it through Shell.
+export { Theme } from "theme.slint";
+
+export component MainWindow inherits Window {
+    title: "CloudNode";
+    // The window and taskbar icon on Windows and Linux. macOS takes the bundle's .icns instead.
+    icon: @image-url("../../../assets/app-icon/hicolor/256x256/apps/com.tradecloud.cloudnode.png");
+    preferred-width: 1200px;
+    preferred-height: 760px;
+    min-width: 760px;
+    min-height: 480px;
+    default-font-family: Metrics.font-ui;
+    default-font-size: Metrics.font-body;
+
+    Shell {
+        width: 100%;
+        height: 100%;
+    }
+}

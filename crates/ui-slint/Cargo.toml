@@ -1,0 +1,26 @@
+[package]
+name = "cloudnode-ui-slint"
+description = "CloudNode's desktop interface (Slint): the window, sidebar, sessions and theme"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+build = "build.rs"
+publish = false
+
+# Not `[lints] workspace = true`: Slint's generated code (`mod generated` in src/lib.rs) may contain
+# `unsafe`, and the workspace's `forbid` can't be lifted for one module. `deny` can, so only that
+# module allows it; everything written by hand here is still safe Rust.
+[lints.rust]
+unsafe_code = "deny"
+
+[lints.clippy]
+dbg_macro = "warn"
+todo = "warn"
+
+[dependencies]
+cloudnode-core = { workspace = true }
+slint = { workspace = true }
+
+[build-dependencies]
+slint-build = { workspace = true }
