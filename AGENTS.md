@@ -97,11 +97,20 @@ writes or URL opens triggered by escape sequences without the user's action).
 
 ### Look and feel
 
-- Apple-like and calm: a restrained dark theme, monochrome dark greys, careful type, generous
-  spacing, rounded corners (6, 8 and 12 px), and 1 px hairlines instead of shadows.
-- One accent, TradeCloud orange, kept for focus, selection, the active session and the primary
-  action. Its value is a placeholder (`TRADECLOUD_ORANGE` in `crates/core/src/theme.rs`) until the
-  brand's exact HEX is supplied.
+- Apple-like and calm: a restrained dark theme, careful type, generous spacing, rounded corners
+  (6, 8 and 12 px), and 1 px hairlines instead of shadows.
+- TradeCloud's palette, in layers (the base constants in `crates/core/src/theme.rs`):
+
+  | Colour | Constant | Role |
+  |---|---|---|
+  | `#171e28` | `BACKGROUND` | The back: the left panel and the middle of the window |
+  | `#232b36` | `SURFACE` | The main colour in front: the session panel (and the terminal), menus, popovers |
+  | `#2a3845` | `ELEMENT` | Elements in the foreground: fields, buttons, the selected row, hairlines |
+  | `#3bbae3` | `ACCENT` | Selected icons (the open panel), focus, the active session, primary buttons |
+  | `#818898` | `TEXT` | Icons and text |
+
+  The hover, strong-text and strong-line tints are derived from these in `Tokens::DARK`. The
+  accent is the only bright colour: never use it for decoration.
 - Colours live only in `crates/core/src/theme.rs` (`Tokens`, shared by the window, the TUI and
   the terminal renderer); sizes, radii and type live only in `crates/ui-slint/ui/theme.slint`
   (`Metrics`). **Never write a colour literal anywhere else.**

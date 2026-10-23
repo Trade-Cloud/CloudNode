@@ -8,7 +8,7 @@ component SearchField inherits Rectangle {
     border-radius: Metrics.radius-md;
     border-width: 1px;
     border-color: input.has-focus ? Theme.accent : Theme.line;
-    background: Theme.field-bg;
+    background: Theme.element;
 
     input := TextInput {
         x: Metrics.space-sm;
@@ -17,7 +17,7 @@ component SearchField inherits Rectangle {
         height: parent.height;
         vertical-alignment: center;
         single-line: true;
-        color: Theme.ink;
+        color: Theme.ink-strong;
         selection-background-color: Theme.selection;
         font-size: Metrics.font-body;
     }
@@ -35,7 +35,7 @@ component SearchField inherits Rectangle {
 }
 
 component SectionHeader inherits Text {
-    color: Theme.faint;
+    color: Theme.ink;
     font-size: Metrics.font-caption;
     font-weight: 600;
 }
@@ -54,7 +54,7 @@ component Section inherits Rectangle {
 
         Text {
             text: root.empty-text;
-            color: Theme.muted;
+            color: Theme.faint;
             font-size: Metrics.font-body;
             wrap: word-wrap;
         }

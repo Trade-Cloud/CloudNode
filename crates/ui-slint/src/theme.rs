@@ -15,20 +15,18 @@ pub fn color(c: Rgba) -> Color {
 /// global's colours are transparent.
 pub fn apply(window: &MainWindow, tokens: &Tokens) {
     let theme = window.global::<Theme>();
-    theme.set_window_bg(color(tokens.window_bg));
     theme.set_sidebar_bg(color(tokens.sidebar_bg));
+    theme.set_content_bg(color(tokens.content_bg));
     theme.set_surface(color(tokens.surface));
-    theme.set_field_bg(color(tokens.field_bg));
-    theme.set_hover(color(tokens.hover));
+    theme.set_element(color(tokens.element));
+    theme.set_element_hover(color(tokens.element_hover));
     theme.set_ink(color(tokens.ink));
     theme.set_ink_strong(color(tokens.ink_strong));
-    theme.set_muted(color(tokens.muted));
     theme.set_faint(color(tokens.faint));
     theme.set_line(color(tokens.line));
     theme.set_line_strong(color(tokens.line_strong));
     theme.set_accent(color(tokens.accent));
     theme.set_accent_hover(color(tokens.accent_hover));
-    theme.set_accent_ink(color(tokens.accent_ink));
     theme.set_on_accent(color(tokens.on_accent));
     theme.set_selection(color(tokens.selection));
     theme.set_good(color(tokens.good));

@@ -2,14 +2,21 @@
 //! the terminal renderer read the same values, so CloudNode looks the same in a window and in a
 //! console. Nothing outside this module writes a colour literal.
 //!
-//! The look follows Apple's dark appearance: monochrome dark greys, hairline separators instead
-//! of shadows, and one accent, TradeCloud orange, saved for focus, selection and the active
-//! session.
+//! The look is layered dark blue-grey: the [`BACKGROUND`] behind everything (the left panel and
+//! the middle of the window), the [`SURFACE`] in front of it, [`ELEMENT`]s on the surface, text
+//! and icons in [`TEXT`], and one accent, [`ACCENT`], for the selected icon (the open panel),
+//! focus and the active session.
 
-/// TradeCloud orange.
-///
-/// Placeholder until the brand's exact value is supplied: change it here and every surface follows.
-pub const TRADECLOUD_ORANGE: Rgba = Rgba::hex(0xff7a1a);
+/// The back of the window: the left panel and the middle, behind the session panel.
+pub const BACKGROUND: Rgba = Rgba::hex(0x171e28);
+/// The main colour, in front of the background: the session panel, menus, popovers.
+pub const SURFACE: Rgba = Rgba::hex(0x232b36);
+/// Elements in the foreground: text fields, buttons, the selected row, hairlines.
+pub const ELEMENT: Rgba = Rgba::hex(0x2a3845);
+/// Selected icons (the panel that is open), focus rings, the active session.
+pub const ACCENT: Rgba = Rgba::hex(0x3bbae3);
+/// Icons and text.
+pub const TEXT: Rgba = Rgba::hex(0x818898);
 
 /// A colour in sRGB with straight (not premultiplied) alpha.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -66,37 +73,34 @@ pub struct TerminalPalette {
 /// Colour tokens for one appearance.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Tokens {
-    /// Behind everything: the title bar and the tab strip.
-    pub window_bg: Rgba,
-    /// The sidebar.
+    /// The left panel (sidebar).
     pub sidebar_bg: Rgba,
-    /// Raised surfaces: menus, popovers, the active tab.
+    /// The middle of the window, behind the session panel.
+    pub content_bg: Rgba,
+    /// The main surface in front of the backgrounds: the session panel, menus, popovers, the
+    /// active tab.
     pub surface: Rgba,
-    /// Text fields and wells.
-    pub field_bg: Rgba,
-    /// A row or button under the pointer.
-    pub hover: Rgba,
-    /// Body text.
+    /// Elements in the foreground: text fields, buttons, the selected row.
+    pub element: Rgba,
+    /// An element under the pointer.
+    pub element_hover: Rgba,
+    /// Text and icons.
     pub ink: Rgba,
-    /// Headings and the active tab's title.
+    /// Headings, typed text and the active tab's title.
     pub ink_strong: Rgba,
-    /// Secondary text.
-    pub muted: Rgba,
-    /// Section headers, placeholders and disabled text.
+    /// Placeholders, empty states and disabled text.
     pub faint: Rgba,
     /// Hairline separators.
     pub line: Rgba,
-    /// Field borders and stronger separators.
+    /// Field borders and stronger separators (the console's box lines).
     pub line_strong: Rgba,
-    /// TradeCloud orange: focus rings, primary buttons, the active session.
+    /// Selected icons (the panel that is open), focus rings, primary buttons, the active session.
     pub accent: Rgba,
     /// The accent under the pointer.
     pub accent_hover: Rgba,
-    /// Text and icons in the accent colour on dark surfaces.
-    pub accent_ink: Rgba,
     /// Text on an accent surface.
     pub on_accent: Rgba,
-    /// Selected rows.
+    /// Selected text and rows.
     pub selection: Rgba,
     pub good: Rgba,
     pub warn: Rgba,
@@ -105,48 +109,48 @@ pub struct Tokens {
 }
 
 impl Tokens {
-    /// The dark appearance, CloudNode's default.
+    /// The dark appearance, CloudNode's default. The six base colours are TradeCloud's; the
+    /// hover, strong-text and strong-line tints are derived from them.
     pub const DARK: Self = Self {
-        window_bg: Rgba::hex(0x18181a),
-        sidebar_bg: Rgba::hex(0x1f1f22),
-        surface: Rgba::hex(0x2a2a2e),
-        field_bg: Rgba::hex(0x141416),
-        hover: Rgba::hex_alpha(0xffffff, 14),
-        ink: Rgba::hex(0xe6e6e8),
-        ink_strong: Rgba::hex(0xffffff),
-        muted: Rgba::hex_alpha(0xebebf5, 153),
-        faint: Rgba::hex_alpha(0xebebf5, 77),
-        line: Rgba::hex_alpha(0xffffff, 20),
-        line_strong: Rgba::hex_alpha(0xffffff, 41),
-        accent: TRADECLOUD_ORANGE,
-        accent_hover: Rgba::hex(0xff8f3d),
-        accent_ink: Rgba::hex(0xff9a52),
-        on_accent: Rgba::hex(0x1a1a1c),
-        selection: TRADECLOUD_ORANGE.with_alpha(56),
+        sidebar_bg: BACKGROUND,
+        content_bg: BACKGROUND,
+        surface: SURFACE,
+        element: ELEMENT,
+        element_hover: Rgba::hex(0x334457),
+        ink: TEXT,
+        ink_strong: Rgba::hex(0xd0d5dd),
+        faint: TEXT.with_alpha(153),
+        line: ELEMENT,
+        line_strong: Rgba::hex(0x3a4a5c),
+        accent: ACCENT,
+        accent_hover: Rgba::hex(0x62c9ea),
+        on_accent: BACKGROUND,
+        selection: ACCENT.with_alpha(56),
         good: Rgba::hex(0x32d74b),
         warn: Rgba::hex(0xffd60a),
         bad: Rgba::hex(0xff453a),
         terminal: TerminalPalette {
-            foreground: Rgba::hex(0xe6e6e8),
-            background: Rgba::hex(0x111113),
-            cursor: TRADECLOUD_ORANGE,
-            selection: TRADECLOUD_ORANGE.with_alpha(77),
+            // Sessions open on the surface, so the terminal shares its colour.
+            background: SURFACE,
+            foreground: Rgba::hex(0xd0d5dd),
+            cursor: ACCENT,
+            selection: ACCENT.with_alpha(77),
             ansi: [
-                Rgba::hex(0x1c1c1f),
+                ELEMENT,
                 Rgba::hex(0xff5f57),
                 Rgba::hex(0x5fd38d),
                 Rgba::hex(0xf5c451),
                 Rgba::hex(0x5aa9ff),
                 Rgba::hex(0xc792ea),
-                Rgba::hex(0x5ccfe6),
-                Rgba::hex(0xc8c8cc),
-                Rgba::hex(0x5a5a60),
+                ACCENT,
+                Rgba::hex(0xc3c8d0),
+                Rgba::hex(0x5b6577),
                 Rgba::hex(0xff7b73),
                 Rgba::hex(0x7ee2a6),
                 Rgba::hex(0xffd479),
                 Rgba::hex(0x82bfff),
                 Rgba::hex(0xd9aef5),
-                Rgba::hex(0x86ddf0),
+                Rgba::hex(0x6fd0ee),
                 Rgba::hex(0xffffff),
             ],
         },
@@ -173,8 +177,15 @@ mod tests {
     }
 
     #[test]
-    fn dark_tokens_use_the_brand_accent() {
-        assert_eq!(Tokens::DARK.accent, TRADECLOUD_ORANGE);
-        assert_eq!(Tokens::DARK.terminal.cursor, TRADECLOUD_ORANGE);
+    fn dark_tokens_put_each_base_colour_in_its_role() {
+        let t = Tokens::DARK;
+        assert_eq!(t.sidebar_bg, Rgba::hex(0x171e28));
+        assert_eq!(t.content_bg, Rgba::hex(0x171e28));
+        assert_eq!(t.surface, Rgba::hex(0x232b36));
+        assert_eq!(t.element, Rgba::hex(0x2a3845));
+        assert_eq!(t.accent, Rgba::hex(0x3bbae3));
+        assert_eq!(t.ink, Rgba::hex(0x818898));
+        assert_eq!(t.terminal.cursor, ACCENT);
+        assert_eq!(t.terminal.background, SURFACE);
     }
 }

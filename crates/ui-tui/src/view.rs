@@ -43,7 +43,7 @@ fn draw_sidebar(frame: &mut Frame, area: Rect, p: &Palette) {
 
 /// Where sessions go. Until one is open it says how to start one.
 fn draw_sessions(frame: &mut Frame, area: Rect, p: &Palette) {
-    let block = panel(p).style(Style::new().bg(p.terminal_bg));
+    let block = panel(p).style(Style::new().bg(p.surface));
     let inner = block.inner(area);
     frame.render_widget(block, area);
 
@@ -51,7 +51,7 @@ fn draw_sessions(frame: &mut Frame, area: Rect, p: &Palette) {
     let text = vec![
         Line::styled("CloudNode", Style::new().fg(p.ink_strong).add_modifier(Modifier::BOLD)),
         Line::styled("──", Style::new().fg(p.accent)),
-        Line::styled("Pick a host in the sidebar to open a session.", Style::new().fg(p.muted)),
+        Line::styled("Pick a host in the sidebar to open a session.", Style::new().fg(p.ink)),
     ];
     frame.render_widget(Paragraph::new(text).alignment(Alignment::Center), middle);
 }
@@ -62,7 +62,7 @@ fn draw_status(frame: &mut Frame, area: Rect, p: &Palette) {
         Span::styled(" q ", Style::new().fg(p.on_accent).bg(p.accent).add_modifier(Modifier::BOLD)),
         Span::styled(" quit", Style::new().fg(p.ink)),
     ]);
-    frame.render_widget(Paragraph::new(line).style(Style::new().bg(p.window_bg)), area);
+    frame.render_widget(Paragraph::new(line).style(Style::new().bg(p.content_bg)), area);
 }
 
 /// A rounded panel outlined in the line colour.
@@ -71,9 +71,9 @@ fn panel(p: &Palette) -> Block<'static> {
 }
 
 fn header(text: &'static str, p: &Palette) -> Line<'static> {
-    Line::styled(text, Style::new().fg(p.faint).add_modifier(Modifier::BOLD))
+    Line::styled(text, Style::new().fg(p.ink).add_modifier(Modifier::BOLD))
 }
 
 fn hint(text: &'static str, p: &Palette) -> Line<'static> {
-    Line::styled(text, Style::new().fg(p.muted))
+    Line::styled(text, Style::new().fg(p.faint))
 }

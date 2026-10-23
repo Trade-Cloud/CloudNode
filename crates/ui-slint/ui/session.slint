@@ -1,39 +1,48 @@
 import { Theme, Metrics } from "theme.slint";
 
-// Where the session tabs and terminals go (M3 and M4). Until a session is open it says how to
-// start one.
+// The middle of the window: the session panel, on the surface colour, in front of the background.
+// The session tabs and terminals will open in it (M3 and M4); until then it says how to start one.
 export component SessionArea inherits Rectangle {
-    background: Theme.terminal-bg;
+    background: Theme.content-bg;
 
     VerticalLayout {
-        alignment: center;
-        spacing: Metrics.space-sm;
+        padding: Metrics.space-sm;
 
-        // The product name is never translated.
-        Text {
-            text: "CloudNode";
-            horizontal-alignment: center;
-            color: Theme.ink-strong;
-            font-size: Metrics.font-display;
-            font-weight: 600;
-        }
+        Rectangle {
+            border-radius: Metrics.radius-lg;
+            background: Theme.surface;
 
-        HorizontalLayout {
-            alignment: center;
+            VerticalLayout {
+                alignment: center;
+                spacing: Metrics.space-sm;
 
-            Rectangle {
-                width: 32px;
-                height: 2px;
-                border-radius: 1px;
-                background: Theme.accent;
+                // The product name is never translated.
+                Text {
+                    text: "CloudNode";
+                    horizontal-alignment: center;
+                    color: Theme.ink-strong;
+                    font-size: Metrics.font-display;
+                    font-weight: 600;
+                }
+
+                HorizontalLayout {
+                    alignment: center;
+
+                    Rectangle {
+                        width: 32px;
+                        height: 2px;
+                        border-radius: 1px;
+                        background: Theme.accent;
+                    }
+                }
+
+                Text {
+                    text: @tr("Pick a host in the sidebar to open a session.");
+                    horizontal-alignment: center;
+                    color: Theme.ink;
+                    font-size: Metrics.font-body;
+                }
             }
-        }
-
-        Text {
-            text: @tr("Pick a host in the sidebar to open a session.");
-            horizontal-alignment: center;
-            color: Theme.muted;
-            font-size: Metrics.font-body;
         }
     }
 }

@@ -2,20 +2,23 @@
 // `cloudnode_ui_slint::theme::apply` before the window opens), so the window, the TUI and the
 // terminal renderer share one palette. Never write a colour literal in any other .slint file.
 export global Theme {
-    in property <color> window-bg;
+    // The left panel and the middle of the window, behind everything.
     in property <color> sidebar-bg;
+    in property <color> content-bg;
+    // The main surface in front: the session panel, menus, popovers.
     in property <color> surface;
-    in property <color> field-bg;
-    in property <color> hover;
+    // Elements in the foreground: fields, buttons, the selected row.
+    in property <color> element;
+    in property <color> element-hover;
+    // Text and icons; the strong form for headings and typed text, the faint one for hints.
     in property <color> ink;
     in property <color> ink-strong;
-    in property <color> muted;
     in property <color> faint;
     in property <color> line;
     in property <color> line-strong;
+    // Selected icons (the open panel), focus, the active session.
     in property <color> accent;
     in property <color> accent-hover;
-    in property <color> accent-ink;
     in property <color> on-accent;
     in property <color> selection;
     in property <color> good;
