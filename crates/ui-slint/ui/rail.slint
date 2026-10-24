@@ -1,4 +1,4 @@
-import { Theme, Metrics } from "theme.slint";
+import { Theme, Metrics, Chrome } from "theme.slint";
 import { Icons, Icon } from "icons.slint";
 
 // What the sidebar's panel shows. Only `hosts` has content yet; the others say they are coming.
@@ -67,7 +67,8 @@ export component NavRail inherits Rectangle {
     background: Theme.rail-bg;
 
     VerticalLayout {
-        padding-top: Metrics.space-sm;
+        // Below macOS's window buttons, which sit over the top of the rail.
+        padding-top: Chrome.titlebar-inset + Metrics.space-sm;
         padding-bottom: Metrics.space-sm;
         spacing: Metrics.space-xs;
 

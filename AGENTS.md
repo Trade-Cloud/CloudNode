@@ -121,6 +121,10 @@ writes or URL opens triggered by escape sequences without the user's action).
 - The title bar holds the native macOS window buttons, the session tabs and a minimal set of
   actions. No global search bar, user profiles or debug buttons. The rest of the window belongs to
   the terminal.
+- On macOS the title bar is transparent and untitled, with the content running under it, so the
+  window buttons sit over the top of the sidebar (`src/chrome.rs`, through Slint's unstable winit
+  0.30 hook). Everything at the top of the window keeps `Chrome.titlebar-inset` free for the buttons
+  and for dragging. Windows and Linux keep their native title bars, where the inset is 0.
 - The sidebar is an icon rail (`ui/rail.slint`: Hosts, Snippets, Port forwarding, Identities,
   SFTP; Help and Settings at the bottom) and the panel it opens. The open panel's icon is drawn in
   the accent, on an element-coloured square, with a short accent bar at the rail's edge. The Hosts
@@ -165,7 +169,7 @@ when localisation lands; until then its strings stay English and short.
 
 | Area | Choice | Why |
 |---|---|---|
-| Desktop UI | Slint 1.18 | Native, declarative, light; royalty-free license for desktop apps (attribution required) |
+| Desktop UI | Slint `~1.18` (pinned to the minor: the macOS title bar uses its unstable winit 0.30 API) | Native, declarative, light; royalty-free license for desktop apps (attribution required) |
 | Console UI | Ratatui 0.30 + Crossterm | The standard Rust TUI stack, pure Rust, works in every terminal |
 | SSH | `russh` ≥ 0.62.5 on Tokio | Pure Rust and async. `ssh2`/libssh2 pulls in C and OpenSSL, which complicates three-platform builds |
 | Keys | RustCrypto `ssh-key` 0.6 (parsing only, `std` + `ecdsa`); `russh::keys` once sessions land | Reads OpenSSH public keys and SHA-256 fingerprints for every key type, pure Rust; avoids using the `rsa` crate directly (open timing advisory, Marvin) |

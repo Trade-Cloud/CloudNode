@@ -1,4 +1,4 @@
-import { Theme, Metrics } from "theme.slint";
+import { Theme, Metrics, Chrome } from "theme.slint";
 
 // The middle of the window: the session panel, on the surface colour, in front of the background.
 // The session tabs and terminals will open in it (M3 and M4); until then it says how to start one.
@@ -7,6 +7,9 @@ export component SessionArea inherits Rectangle {
 
     VerticalLayout {
         padding: Metrics.space-sm;
+        // On macOS the band above the panel is the title bar, where the window is dragged and the
+        // session tabs will go.
+        padding-top: max(Chrome.titlebar-inset, Metrics.space-sm);
 
         Rectangle {
             border-radius: Metrics.radius-lg;

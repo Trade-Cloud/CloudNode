@@ -1,4 +1,4 @@
-import { Theme, Metrics } from "theme.slint";
+import { Theme, Metrics, Chrome } from "theme.slint";
 import { Icons, Icon } from "icons.slint";
 import { Panel, NavRail } from "rail.slint";
 import { KeyList, KeyManagement } from "keys.slint";
@@ -85,6 +85,8 @@ component Section inherits Rectangle {
 component HostsPanel inherits Rectangle {
     VerticalLayout {
         padding: Metrics.space-md;
+        // Below macOS's window buttons, which sit over the top of the sidebar.
+        padding-top: Chrome.titlebar-inset + Metrics.space-md;
         spacing: Metrics.space-lg;
 
         SearchField {
@@ -123,6 +125,7 @@ component LaterPanel inherits Rectangle {
 
     VerticalLayout {
         padding: Metrics.space-md;
+        padding-top: Chrome.titlebar-inset + Metrics.space-md;
         spacing: Metrics.space-sm;
         alignment: start;
 

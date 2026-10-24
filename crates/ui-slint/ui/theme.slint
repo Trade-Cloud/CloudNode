@@ -29,6 +29,13 @@ export global Theme {
     in property <color> terminal-fg;
 }
 
+// The window's frame, set from Rust (`src/chrome.rs`). On macOS the title bar is transparent and
+// its window buttons sit over the top of the window, so the sidebar and the sessions keep this
+// much room there. Elsewhere the title bar is native and this stays 0.
+export global Chrome {
+    in property <length> titlebar-inset: 0px;
+}
+
 // Sizes, radii and type. Only the window uses them, so they live here rather than in Rust.
 export global Metrics {
     out property <length> radius-sm: 6px;

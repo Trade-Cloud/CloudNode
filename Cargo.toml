@@ -40,8 +40,10 @@ dirs = "6"
 ssh-key = { version = "0.6.7", default-features = false, features = ["std", "ecdsa"] }
 
 # ui
-slint = "1.18"
-slint-build = "1.18"
+# Pinned to the 1.18 minor releases: the macOS title bar (crates/ui-slint/src/chrome.rs) uses Slint's
+# unstable winit 0.30 API, which may change in any minor release. Check chrome.rs when moving on.
+slint = { version = "~1.18", features = ["unstable-winit-030"] }
+slint-build = "~1.18"
 ratatui = "0.30"
 
 [profile.dev.package."*"]
