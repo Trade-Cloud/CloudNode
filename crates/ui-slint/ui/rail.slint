@@ -1,0 +1,141 @@
+import { Theme, Metrics } from "theme.slint";
+import { Icons, Icon } from "icons.slint";
+
+// What the sidebar's panel shows. Only `hosts` has content yet; the others say they are coming.
+export enum Panel {
+    hosts,
+    snippets,
+    forwarding,
+    identities,
+    sftp,
+    help,
+    settings,
+}
+
+// One place in the rail: the icon button, with the accent bar at the rail's edge while its panel
+// is open.
+component RailItem inherits Rectangle {
+    in property <string> icon;
+    in property <string> label;
+    in property <bool> active;
+    callback clicked();
+
+    height: Metrics.rail-item-height;
+
+    if root.active: Rectangle {
+        x: 0px;
+        y: (parent.height - self.height) / 2;
+        width: 3px;
+        height: 20px;
+        border-radius: 1.5px;
+        background: Theme.accent;
+    }
+
+    Rectangle {
+        x: (parent.width - self.width) / 2;
+        y: (parent.height - self.height) / 2;
+        width: Metrics.rail-button;
+        height: Metrics.rail-button;
+        border-radius: Metrics.radius-md;
+        background: root.active ? Theme.element : touch.has-hover ? Theme.surface : transparent;
+        accessible-role: button;
+        accessible-label: root.label;
+
+        Icon {
+            x: (parent.width - self.width) / 2;
+            y: (parent.height - self.height) / 2;
+            commands: root.icon;
+            tint: root.active ? Theme.accent : touch.has-hover ? Theme.ink-strong : Theme.ink;
+        }
+
+        touch := TouchArea {
+            x: 0px;
+            y: 0px;
+            width: parent.width;
+            height: parent.height;
+            clicked => {
+                root.clicked();
+            }
+        }
+    }
+}
+
+// The icon rail at the window's left edge: the panels on top, help and settings at the bottom.
+export component NavRail inherits Rectangle {
+    in-out property <Panel> panel;
+
+    background: Theme.rail-bg;
+
+    VerticalLayout {
+        padding-top: Metrics.space-sm;
+        padding-bottom: Metrics.space-sm;
+        spacing: Metrics.space-xs;
+
+        RailItem {
+            icon: Icons.home;
+            label: @tr("Hosts");
+            active: root.panel == Panel.hosts;
+            clicked => {
+                root.panel = Panel.hosts;
+            }
+        }
+
+        RailItem {
+            icon: Icons.terminal;
+            label: @tr("Snippets");
+            active: root.panel == Panel.snippets;
+            clicked => {
+                root.panel = Panel.snippets;
+            }
+        }
+
+        RailItem {
+            icon: Icons.window;
+            label: @tr("Port forwarding");
+            active: root.panel == Panel.forwarding;
+            clicked => {
+                root.panel = Panel.forwarding;
+            }
+        }
+
+        RailItem {
+            icon: Icons.people;
+            label: @tr("Identities");
+            active: root.panel == Panel.identities;
+            clicked => {
+                root.panel = Panel.identities;
+            }
+        }
+
+        RailItem {
+            icon: Icons.folder;
+            label: @tr("SFTP");
+            active: root.panel == Panel.sftp;
+            clicked => {
+                root.panel = Panel.sftp;
+            }
+        }
+
+        Rectangle {
+            vertical-stretch: 1;
+        }
+
+        RailItem {
+            icon: Icons.help;
+            label: @tr("Help");
+            active: root.panel == Panel.help;
+            clicked => {
+                root.panel = Panel.help;
+            }
+        }
+
+        RailItem {
+            icon: Icons.settings;
+            label: @tr("Settings");
+            active: root.panel == Panel.settings;
+            clicked => {
+                root.panel = Panel.settings;
+            }
+        }
+    }
+}

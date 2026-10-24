@@ -10,7 +10,9 @@ CC BY, SIL OFL, MIT, Apache-2.0, BSD, ISC) and keep their license file next to t
 
 | Path | Title | Author | Source | License |
 |---|---|---|---|---|
-| | *No third-party assets yet.* The app icon (window icon) is TradeCloud's, listed under [Brand](#brand). | | | |
+| `crates/ui-slint/ui/icons.slint` (`Icons`) | Interface icons: home, terminal, window, people, folder, help, settings, search, "more" dots | CloudNode contributors | Original work, drawn as SVG path data on a 24-unit grid | MIT OR Apache-2.0, like the code |
+
+No third-party assets yet. The app icon (window icon) is TradeCloud's, listed under [Brand](#brand).
 
 Planned (milestone M4 in [`ROADMAP.md`](ROADMAP.md)), each with its row and license file when it
 lands:

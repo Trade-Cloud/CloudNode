@@ -1,8 +1,9 @@
 import { Theme, Metrics } from "theme.slint";
+import { Icons, IconButton, TextButton, PopupItem } from "icons.slint";
 
 // What is known about one key, without its private half.
 export enum KeyState {
-    // Read from the public key file: `kind` and `fingerprint` are set.
+    // Read from the public key file: `kind`, `fingerprint` and `comment` are set.
     readable,
     // Only a private key file: nothing more is read until the key is used.
     private-only,
@@ -19,55 +20,255 @@ export struct KeyEntry {
     kind: string,
     // `SHA256:…`, as `ssh-keygen -l` prints it.
     fingerprint: string,
+    // The public key's comment, often `user@machine`.
+    comment: string,
+    // When the key was made, `2024-01-20`; empty when unknown.
+    created: string,
+    // Where the key lives, `~/.ssh/id_ed25519`.
+    path: string,
     problem: string,
 }
 
 // The keys found on this machine. Rust reads them in the background and fills this in.
 export global KeyList {
-    in property <[KeyEntry]> keys;
+    // Every key found.
+    in-out property <[KeyEntry]> found;
+    // The keys shown: those matching `query`.
+    in-out property <[KeyEntry]> keys;
+    in-out property <string> query;
     in property <bool> loading: true;
     // The folder read, as people write it: `~/.ssh`.
     in property <string> folder: "~/.ssh";
     // Why the folder couldn't be read; empty when it could.
     in property <string> error;
+    // Read the folder again.
+    callback refresh();
+    // The search box changed: show the keys matching this.
+    callback search(string);
 }
 
-// One key: its name and type, with the fingerprint (or what is wrong with it) underneath.
-export component KeyRow inherits Rectangle {
-    in property <KeyEntry> key;
+// One labelled value in a card's details. Selectable, so it can be copied.
+component DetailLine inherits Rectangle {
+    in property <string> label;
+    in property <string> value;
+    in property <bool> mono;
 
     VerticalLayout {
-        padding-top: Metrics.space-xs;
-        padding-bottom: Metrics.space-xs;
-        spacing: 2px;
+        spacing: 1px;
+
+        Text {
+            text: root.label;
+            color: Theme.faint;
+            font-size: Metrics.font-caption;
+        }
+
+        TextInput {
+            text: root.value;
+            read-only: true;
+            single-line: false;
+            wrap: char-wrap;
+            color: Theme.ink-strong;
+            selection-background-color: Theme.selection;
+            font-family: root.mono ? Metrics.font-mono : Metrics.font-ui;
+            font-size: Metrics.font-caption;
+        }
+    }
+}
+
+// One key: its name, with its type and age underneath. "⋮" (or a click anywhere on the card)
+// opens its details: the fingerprint, comment and file.
+export component KeyCard inherits Rectangle {
+    in property <KeyEntry> key;
+    property <bool> expanded;
+    property <string> summary: root.key.state == KeyState.readable
+        ? (root.key.created == "" ? root.key.kind : @tr("{}, created {}", root.key.kind, root.key.created))
+        : root.key.state == KeyState.private-only ? @tr("Private key only, no .pub file")
+        : root.key.problem;
+
+    border-radius: Metrics.radius-md;
+    border-width: 1px;
+    border-color: root.expanded || touch.has-hover ? Theme.line-strong : Theme.line;
+    background: Theme.surface;
+
+    touch := TouchArea {
+        x: 0px;
+        y: 0px;
+        width: parent.width;
+        height: parent.height;
+        clicked => {
+            root.expanded = !root.expanded;
+        }
+    }
+
+    VerticalLayout {
+        padding: Metrics.card-padding;
+        spacing: Metrics.space-sm;
+
+        HorizontalLayout {
+            spacing: Metrics.space-sm;
+
+            VerticalLayout {
+                spacing: 2px;
+                horizontal-stretch: 1;
+
+                Text {
+                    text: root.key.name;
+                    color: Theme.ink-strong;
+                    font-size: Metrics.font-body;
+                    font-weight: 600;
+                    overflow: elide;
+                }
+
+                Text {
+                    text: root.summary;
+                    color: root.key.state == KeyState.unreadable ? Theme.bad : Theme.ink;
+                    font-size: Metrics.font-caption;
+                    overflow: elide;
+                }
+            }
+
+            VerticalLayout {
+                alignment: center;
+
+                IconButton {
+                    icon: Icons.more-vertical;
+                    filled: true;
+                    label: root.expanded ? @tr("Hide key details") : @tr("Show key details");
+                    clicked => {
+                        root.expanded = !root.expanded;
+                    }
+                }
+            }
+        }
+
+        if root.expanded: VerticalLayout {
+            spacing: Metrics.space-sm;
+
+            if root.key.fingerprint != "": DetailLine {
+                label: @tr("Fingerprint");
+                value: root.key.fingerprint;
+                mono: true;
+            }
+
+            if root.key.comment != "": DetailLine {
+                label: @tr("Comment");
+                value: root.key.comment;
+            }
+
+            if root.key.path != "": DetailLine {
+                label: @tr("File");
+                value: root.key.path;
+                mono: true;
+            }
+        }
+    }
+}
+
+// Key Management at the bottom of the sidebar: the keys in ~/.ssh as cards, a menu to read the
+// folder again, and "New Key". The list scrolls beyond Metrics.keys-max-height.
+export component KeyManagement inherits Rectangle {
+    VerticalLayout {
+        spacing: Metrics.space-sm;
 
         HorizontalLayout {
             spacing: Metrics.space-sm;
 
             Text {
-                text: root.key.name;
+                text: @tr("KEY MANAGEMENT");
                 color: Theme.ink;
-                font-size: Metrics.font-body;
-                overflow: elide;
+                font-size: Metrics.font-caption;
+                font-weight: 600;
+                letter-spacing: Metrics.header-letter-spacing;
+                vertical-alignment: center;
                 horizontal-stretch: 1;
             }
 
-            Text {
-                text: root.key.kind;
-                color: Theme.faint;
-                font-size: Metrics.font-caption;
-                vertical-alignment: center;
+            IconButton {
+                icon: Icons.more-horizontal;
+                filled: true;
+                label: @tr("Key Management options");
+                clicked => {
+                    menu.show();
+                }
             }
         }
 
-        Text {
-            text: root.key.state == KeyState.readable ? root.key.fingerprint
-                : root.key.state == KeyState.private-only ? @tr("Private key only, no .pub file")
-                : root.key.problem;
-            color: root.key.state == KeyState.unreadable ? Theme.bad : Theme.faint;
-            font-family: Metrics.font-mono;
-            font-size: Metrics.font-caption;
-            overflow: elide;
+        if KeyList.loading: Text {
+            text: @tr("Reading {}…", KeyList.folder);
+            color: Theme.faint;
+            font-size: Metrics.font-body;
+            wrap: word-wrap;
+        }
+
+        if !KeyList.loading && KeyList.error != "": Text {
+            text: KeyList.error;
+            color: Theme.bad;
+            font-size: Metrics.font-body;
+            wrap: word-wrap;
+        }
+
+        if !KeyList.loading && KeyList.error == "" && KeyList.found.length == 0: Text {
+            text: @tr("No keys in {}", KeyList.folder);
+            color: Theme.faint;
+            font-size: Metrics.font-body;
+            wrap: word-wrap;
+        }
+
+        if !KeyList.loading && KeyList.found.length > 0 && KeyList.keys.length == 0: Text {
+            text: @tr("No keys match “{}”", KeyList.query);
+            color: Theme.faint;
+            font-size: Metrics.font-body;
+            wrap: word-wrap;
+        }
+
+        scroller := Flickable {
+            height: min(list.preferred-height, Metrics.keys-max-height);
+            content-width: self.width;
+            // Set by hand: a Flickable can't size itself from repeated children.
+            content-height: list.preferred-height;
+
+            list := VerticalLayout {
+                width: scroller.width;
+                spacing: Metrics.space-sm;
+
+                for entry in KeyList.keys: KeyCard {
+                    key: entry;
+                }
+            }
+        }
+
+        // Generating keys comes with the next Key Management step (M4 in ROADMAP.md).
+        TextButton {
+            text: @tr("New Key");
+            enabled: false;
+        }
+    }
+
+    menu := PopupWindow {
+        x: root.width - self.width;
+        y: Metrics.icon-button + Metrics.space-xs;
+        width: 180px;
+        // One item for now: Import, Open folder and the like join it with key generation.
+        height: Metrics.row-height + 2 * Metrics.space-xs;
+
+        Rectangle {
+            width: parent.width;
+            height: parent.height;
+            background: Theme.surface;
+            border-radius: Metrics.radius-md;
+            border-width: 1px;
+            border-color: Theme.line-strong;
+
+            VerticalLayout {
+                padding: Metrics.space-xs;
+
+                PopupItem {
+                    text: @tr("Refresh");
+                    clicked => {
+                        KeyList.refresh();
+                    }
+                }
+            }
         }
     }
 }

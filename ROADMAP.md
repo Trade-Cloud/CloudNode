@@ -2,7 +2,7 @@
 
 **Stage: pre-alpha** · next: M1 (the vault)
 
-> **Last updated:** 2026-10-24 · **Change:** Key Management lists the keys in `~/.ssh` (M4)
+> **Last updated:** 2026-10-24 · **Change:** the sidebar's icon rail and Key Management cards (M4)
 
 Each milestone ends with `cargo xtask ci` green and the change described here. Tick a box in the
 same change that lands the work.
@@ -41,9 +41,11 @@ same change that lands the work.
 ## M4: Desktop shell
 
 - [ ] Title bar with the native macOS window buttons and session tabs; Windows and Linux equivalents
-- [ ] Sidebar: search over hosts and keys, Favorites, Connected, groups, host editor
+- [x] Sidebar layout: icon rail (Hosts, Snippets, Port forwarding, Identities, SFTP, Help, Settings) with the open panel in the accent; only Hosts has content yet
+- [ ] Sidebar: host lists from the vault (Favorites, Connected, groups), host editor, search over hosts
 - [x] Key Management lists the keys in `~/.ssh` (name, type, SHA-256 fingerprint; private-only and unreadable keys marked), in the window and the console
-- [ ] Key Management: generate Ed25519 and RSA, import, export the public key, copy fingerprint, refresh the list
+- [x] Key Management as cards: type and creation date, details on "⋮" (fingerprint, comment and file, selectable to copy), search over keys, Refresh in the "···" menu
+- [ ] Key Management: generate Ed25519 and RSA ("New Key"), import, export the public key
 - [ ] Bundle Inter and JetBrains Mono (SIL OFL 1.1) with their `ATTRIBUTION.md` rows
 - [ ] About window with Slint's "About Slint" attribution (required by Slint's license)
 - [ ] Log file with rotation in the data folder; single running instance

@@ -1,53 +1,72 @@
 import { Theme, Metrics } from "theme.slint";
-import { KeyList, KeyRow } from "keys.slint";
+import { Icons, Icon } from "icons.slint";
+import { Panel, NavRail } from "rail.slint";
+import { KeyList, KeyManagement } from "keys.slint";
 
-// The search box at the top of the sidebar. It will filter hosts and keys as you type (M4).
+// The search box at the top of the panel. Filters the keys as you type; hosts join in with the
+// vault (M1).
 component SearchField inherits Rectangle {
     in-out property <string> text <=> input.text;
+    callback edited(string);
 
     height: Metrics.field-height;
     border-radius: Metrics.radius-md;
     border-width: 1px;
     border-color: input.has-focus ? Theme.accent : Theme.line;
-    background: Theme.element;
+    background: Theme.surface;
+
+    Icon {
+        x: Metrics.space-sm;
+        y: (parent.height - self.height) / 2;
+        width: Metrics.icon-size-small;
+        height: Metrics.icon-size-small;
+        commands: Icons.search;
+        tint: input.has-focus ? Theme.ink-strong : Theme.ink;
+    }
 
     input := TextInput {
-        x: Metrics.space-sm;
+        x: Metrics.space-sm + Metrics.icon-size-small + Metrics.space-sm;
         y: 0px;
-        width: parent.width - 2 * Metrics.space-sm;
+        width: parent.width - self.x - Metrics.space-sm;
         height: parent.height;
         vertical-alignment: center;
         single-line: true;
         color: Theme.ink-strong;
         selection-background-color: Theme.selection;
         font-size: Metrics.font-body;
+        accessible-label: @tr("Search hosts and keys");
+        edited => {
+            root.edited(self.text);
+        }
     }
 
     if root.text == "": Text {
-        x: Metrics.space-sm;
+        x: input.x;
         y: 0px;
-        width: parent.width - 2 * Metrics.space-sm;
+        width: input.width;
         height: parent.height;
         vertical-alignment: center;
-        text: @tr("Search hosts and keys");
+        text: @tr("Search hosts & keys…");
         color: Theme.faint;
         font-size: Metrics.font-body;
     }
 }
 
+// A section's title: small capitals, spaced out a little.
 component SectionHeader inherits Text {
     color: Theme.ink;
     font-size: Metrics.font-caption;
     font-weight: 600;
+    letter-spacing: Metrics.header-letter-spacing;
 }
 
-// A titled list. Until the vault is wired up (M1) every list shows its empty state.
+// A titled host list. Until the vault is wired up (M1) every list shows its empty state.
 component Section inherits Rectangle {
     in property <string> title;
     in property <string> empty-text;
 
     VerticalLayout {
-        spacing: Metrics.space-xs;
+        spacing: Metrics.space-sm;
 
         SectionHeader {
             text: root.title;
@@ -62,92 +81,29 @@ component Section inherits Rectangle {
     }
 }
 
-// Key Management: the keys found in ~/.ssh, listed for now. Scrolls once it is taller than
-// Metrics.keys-max-height, so the host lists keep their room.
-component KeysSection inherits Rectangle {
-    VerticalLayout {
-        spacing: Metrics.space-xs;
-
-        HorizontalLayout {
-            spacing: Metrics.space-sm;
-
-            SectionHeader {
-                text: @tr("Keys");
-                horizontal-stretch: 1;
-            }
-
-            if KeyList.keys.length > 0: Text {
-                text: KeyList.keys.length;
-                color: Theme.faint;
-                font-size: Metrics.font-caption;
-                vertical-alignment: center;
-            }
-        }
-
-        if KeyList.loading: Text {
-            text: @tr("Reading {}…", KeyList.folder);
-            color: Theme.faint;
-            font-size: Metrics.font-body;
-            wrap: word-wrap;
-        }
-
-        if !KeyList.loading && KeyList.error != "": Text {
-            text: KeyList.error;
-            color: Theme.bad;
-            font-size: Metrics.font-body;
-            wrap: word-wrap;
-        }
-
-        if !KeyList.loading && KeyList.error == "" && KeyList.keys.length == 0: Text {
-            text: @tr("No keys in {}", KeyList.folder);
-            color: Theme.faint;
-            font-size: Metrics.font-body;
-            wrap: word-wrap;
-        }
-
-        scroller := Flickable {
-            height: min(list.preferred-height, Metrics.keys-max-height);
-            content-width: self.width;
-            // Set by hand: a Flickable can't size itself from repeated children.
-            content-height: list.preferred-height;
-
-            list := VerticalLayout {
-                width: scroller.width;
-
-                for entry in KeyList.keys: KeyRow {
-                    key: entry;
-                }
-            }
-        }
-    }
-}
-
-// Search, the host lists, and Key Management at the bottom.
-export component Sidebar inherits Rectangle {
-    background: Theme.sidebar-bg;
-
+// The Hosts panel: search, the host lists, and Key Management at the bottom.
+component HostsPanel inherits Rectangle {
     VerticalLayout {
         padding: Metrics.space-md;
         spacing: Metrics.space-lg;
 
-        SearchField { }
+        SearchField {
+            edited(text) => {
+                KeyList.search(text);
+            }
+        }
 
         Section {
-            title: @tr("Favorites");
+            title: @tr("FAVORITES");
             empty-text: @tr("Star a host to keep it here.");
         }
 
         Section {
-            title: @tr("Connected");
+            title: @tr("CONNECTED");
             empty-text: @tr("No open sessions.");
         }
 
-        Section {
-            title: @tr("Hosts");
-            empty-text: @tr("No hosts yet.");
-        }
-
-        // Pushes Key Management to the bottom of the sidebar.
+        // Pushes Key Management to the bottom of the panel.
         Rectangle {
             vertical-stretch: 1;
         }
@@ -157,6 +113,71 @@ export component Sidebar inherits Rectangle {
             background: Theme.line;
         }
 
-        KeysSection { }
+        KeyManagement { }
+    }
+}
+
+// A panel whose content comes in a later version.
+component LaterPanel inherits Rectangle {
+    in property <string> title;
+
+    VerticalLayout {
+        padding: Metrics.space-md;
+        spacing: Metrics.space-sm;
+        alignment: start;
+
+        SectionHeader {
+            text: root.title;
+        }
+
+        Text {
+            text: @tr("This comes in a later version of CloudNode.");
+            color: Theme.faint;
+            font-size: Metrics.font-body;
+            wrap: word-wrap;
+        }
+    }
+}
+
+// The sidebar: the icon rail, a hairline, and the panel the rail has open.
+export component Sidebar inherits Rectangle {
+    in-out property <Panel> panel: Panel.hosts;
+
+    background: Theme.sidebar-bg;
+
+    HorizontalLayout {
+        NavRail {
+            width: Metrics.rail-width;
+            panel <=> root.panel;
+        }
+
+        Rectangle {
+            width: 1px;
+            background: Theme.line;
+        }
+
+        Rectangle {
+            width: Metrics.panel-width;
+
+            if root.panel == Panel.hosts: HostsPanel {
+                x: 0px;
+                y: 0px;
+                width: parent.width;
+                height: parent.height;
+            }
+
+            if root.panel != Panel.hosts: LaterPanel {
+                x: 0px;
+                y: 0px;
+                width: parent.width;
+                height: parent.height;
+                title: root.panel == Panel.snippets ? @tr("SNIPPETS")
+                    : root.panel == Panel.forwarding ? @tr("PORT FORWARDING")
+                    : root.panel == Panel.identities ? @tr("IDENTITIES")
+                    : root.panel == Panel.sftp ? @tr("SFTP")
+                    : root.panel == Panel.help ? @tr("HELP")
+                    : @tr("SETTINGS");
+            }
+        }
     }
 }

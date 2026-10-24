@@ -10,6 +10,7 @@
 pub mod host;
 pub mod key;
 pub mod theme;
+pub mod time;
 
 pub use host::{Auth, Group, GroupId, Host, HostError, HostId};
 pub use key::{KeyAlgorithm, KeyId, KeyInfo};

@@ -119,9 +119,16 @@ writes or URL opens triggered by escape sequences without the user's action).
   the terminal renderer); sizes, radii and type live only in `crates/ui-slint/ui/theme.slint`
   (`Metrics`). **Never write a colour literal anywhere else.**
 - The title bar holds the native macOS window buttons, the session tabs and a minimal set of
-  actions. No global search bar, user profiles or debug buttons. The sidebar holds a compact host
-  and key search, the host lists (Favorites, Connected, groups) and Key Management at the bottom.
-  The rest of the window belongs to the terminal.
+  actions. No global search bar, user profiles or debug buttons. The rest of the window belongs to
+  the terminal.
+- The sidebar is an icon rail (`ui/rail.slint`: Hosts, Snippets, Port forwarding, Identities,
+  SFTP; Help and Settings at the bottom) and the panel it opens. The open panel's icon is drawn in
+  the accent, on an element-coloured square, with a short accent bar at the rail's edge. The Hosts
+  panel holds a compact search over hosts and keys, the host lists (FAVORITES, CONNECTED, groups)
+  and KEY MANAGEMENT at the bottom: keys as cards (name; type and date; "⋮" for details) and
+  "New Key". Section headers are small capitals with a little letter spacing.
+- Icons are original line drawings in `ui/icons.slint` (SVG path data on a 24-unit grid), tinted
+  with the theme. Add new ones there, drawn in the same style; never copy another app's icons.
 
 ### Languages
 

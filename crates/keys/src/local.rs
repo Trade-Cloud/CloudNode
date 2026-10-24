@@ -9,6 +9,7 @@ use std::collections::BTreeMap;
 use std::fs::{self, File};
 use std::io::{self, Read};
 use std::path::{MAIN_SEPARATOR, Path, PathBuf};
+use std::time::SystemTime;
 
 use cloudnode_core::KeyAlgorithm;
 use ssh_key::{HashAlg, PublicKey};
@@ -42,6 +43,9 @@ pub struct LocalKey {
     /// The private key file, when there is one.
     pub private_file: Option<PathBuf>,
     pub details: Details,
+    /// When the key was made: the private key file's creation time (its last change where the
+    /// file system keeps no creation time), else the public key file's.
+    pub created: Option<SystemTime>,
 }
 
 /// What can be shown about a key without touching its private half.
@@ -107,13 +111,18 @@ pub fn scan_dir(dir: &Path) -> Result<Scan, ScanError> {
         if file_name.starts_with('.') {
             continue;
         }
+        let made = metadata.created().or_else(|_| metadata.modified()).ok();
         if let Some(name) = file_name.strip_suffix(".pub") {
             // `*-cert.pub` files are certificates for a key, not keys of their own.
             if !name.is_empty() && !name.ends_with("-cert") {
-                pairs.entry(name.to_owned()).or_default().public = Some(path);
+                let pair = pairs.entry(name.to_owned()).or_default();
+                pair.public = Some(path);
+                pair.public_made = made;
             }
         } else if !NOT_KEYS.contains(&file_name.as_str()) && looks_like_private_key(&path) {
-            pairs.entry(file_name).or_default().private = Some(path);
+            let pair = pairs.entry(file_name).or_default();
+            pair.private = Some(path);
+            pair.private_made = made;
         }
     }
 
@@ -121,7 +130,8 @@ pub fn scan_dir(dir: &Path) -> Result<Scan, ScanError> {
         .into_iter()
         .map(|(name, pair)| {
             let details = describe(pair.public.as_deref());
-            LocalKey { name, public_file: pair.public, private_file: pair.private, details }
+            let created = pair.private_made.or(pair.public_made);
+            LocalKey { name, public_file: pair.public, private_file: pair.private, details, created }
         })
         .collect();
     Ok(Scan { dir: dir.to_path_buf(), keys })
@@ -132,6 +142,8 @@ pub fn scan_dir(dir: &Path) -> Result<Scan, ScanError> {
 struct Pair {
     public: Option<PathBuf>,
     private: Option<PathBuf>,
+    public_made: Option<SystemTime>,
+    private_made: Option<SystemTime>,
 }
 
 /// Whether a file starts like a private key: OpenSSH's own format, the older PEM ones (RSA, EC,
@@ -324,6 +336,7 @@ mod tests {
         assert!(matches!(broken.details, Details::Unreadable(_)));
         assert!(ed.public_file.is_some() && ed.private_file.is_some());
         assert_eq!(ed.details, Details::Public(parse_public_key(ED25519).unwrap()));
+        assert!(ed.created.is_some(), "every file system keeps at least a modification time");
         assert_eq!(rsa.details, Details::PrivateOnly);
         assert!(rsa.public_file.is_none());
         assert!(work.private_file.is_none());

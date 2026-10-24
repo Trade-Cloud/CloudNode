@@ -15,6 +15,7 @@ pub fn color(c: Rgba) -> Color {
 /// global's colours are transparent.
 pub fn apply(window: &MainWindow, tokens: &Tokens) {
     let theme = window.global::<Theme>();
+    theme.set_rail_bg(color(tokens.rail_bg));
     theme.set_sidebar_bg(color(tokens.sidebar_bg));
     theme.set_content_bg(color(tokens.content_bg));
     theme.set_surface(color(tokens.surface));

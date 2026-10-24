@@ -2,7 +2,8 @@
 // `cloudnode_ui_slint::theme::apply` before the window opens), so the window, the TUI and the
 // terminal renderer share one palette. Never write a colour literal in any other .slint file.
 export global Theme {
-    // The left panel and the middle of the window, behind everything.
+    // The icon rail, the left panel and the middle of the window, behind everything.
+    in property <color> rail-bg;
     in property <color> sidebar-bg;
     in property <color> content-bg;
     // The main surface in front: the session panel, menus, popovers.
@@ -40,11 +41,22 @@ export global Metrics {
     out property <length> space-lg: 16px;
     out property <length> space-xl: 24px;
 
-    out property <length> sidebar-width: 260px;
+    // The sidebar: the icon rail, a hairline, and the panel the rail opens.
+    out property <length> rail-width: 52px;
+    out property <length> rail-item-height: 40px;
+    out property <length> rail-button: 36px;
+    out property <length> panel-width: 248px;
     // Key Management scrolls beyond this, so the host lists above keep their room.
-    out property <length> keys-max-height: 240px;
+    out property <length> keys-max-height: 300px;
+    out property <length> card-padding: 10px;
     out property <length> row-height: 28px;
-    out property <length> field-height: 28px;
+    out property <length> field-height: 32px;
+    out property <length> button-height: 32px;
+    out property <length> icon-size: 20px;
+    out property <length> icon-size-small: 16px;
+    out property <length> icon-button: 24px;
+    // Section headers are small capitals, spaced out a little.
+    out property <length> header-letter-spacing: 0.6px;
 
     // Inter for the interface and JetBrains Mono for the terminal (both SIL OFL 1.1). Until they
     // are bundled (M4 in ROADMAP.md) Slint falls back to the system's faces.

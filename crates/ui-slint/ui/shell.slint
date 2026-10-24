@@ -8,7 +8,7 @@ export component Shell inherits Rectangle {
 
     HorizontalLayout {
         Sidebar {
-            width: Metrics.sidebar-width;
+            width: Metrics.rail-width + 1px + Metrics.panel-width;
         }
 
         // The hairline between the sidebar and the sessions.

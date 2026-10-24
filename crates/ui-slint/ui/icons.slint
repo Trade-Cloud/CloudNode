@@ -1,0 +1,140 @@
+import { Theme, Metrics } from "theme.slint";
+
+// CloudNode's icons: simple line drawings on a 24-unit grid, drawn here as SVG path data. They are
+// original work (ATTRIBUTION.md); never trace them from another app's icons.
+export global Icons {
+    out property <string> home: "M3 10.5 L12 3 L21 10.5 V20 A1 1 0 0 1 20 21 H15 V14 H9 V21 H4 A1 1 0 0 1 3 20 Z";
+    out property <string> terminal: "M4 17 L10 11 L4 5 M12 19 L20 19";
+    out property <string> window: "M3 6 A2 2 0 0 1 5 4 H19 A2 2 0 0 1 21 6 V18 A2 2 0 0 1 19 20 H5 A2 2 0 0 1 3 18 Z M3 9 H21";
+    out property <string> people: "M9 11 A4 4 0 1 0 9 3 A4 4 0 1 0 9 11 Z M2 21 V19 A5 5 0 0 1 7 14 H11 A5 5 0 0 1 16 19 V21 M16 3.5 A4 4 0 0 1 16 10.5 M22 21 V19 A5 5 0 0 0 18.5 14.2";
+    out property <string> folder: "M3 7 A2 2 0 0 1 5 5 H9 L11 7 H19 A2 2 0 0 1 21 9 V18 A2 2 0 0 1 19 20 H5 A2 2 0 0 1 3 18 Z";
+    out property <string> help: "M12 22 A10 10 0 1 0 12 2 A10 10 0 1 0 12 22 Z M9.5 9.5 A2.5 2.5 0 1 1 13.2 11.7 C12.4 12.2 12 12.8 12 13.6 V14 M12 17 A0.8 0.8 0 1 0 12 18.6 A0.8 0.8 0 1 0 12 17 Z";
+    out property <string> settings: "M12 15 A3 3 0 1 0 12 9 A3 3 0 1 0 12 15 Z M12 2 V5 M12 19 V22 M4.9 4.9 L7 7 M17 17 L19.1 19.1 M2 12 H5 M19 12 H22 M4.9 19.1 L7 17 M17 7 L19.1 4.9";
+    out property <string> search: "M11 18 A7 7 0 1 0 11 4 A7 7 0 1 0 11 18 Z M21 21 L16 16";
+    // Filled dots: draw these with `filled: true`.
+    out property <string> more-horizontal: "M3.4 12 A1.6 1.6 0 1 0 6.6 12 A1.6 1.6 0 1 0 3.4 12 Z M10.4 12 A1.6 1.6 0 1 0 13.6 12 A1.6 1.6 0 1 0 10.4 12 Z M17.4 12 A1.6 1.6 0 1 0 20.6 12 A1.6 1.6 0 1 0 17.4 12 Z";
+    out property <string> more-vertical: "M12 3.4 A1.6 1.6 0 1 0 12 6.6 A1.6 1.6 0 1 0 12 3.4 Z M12 10.4 A1.6 1.6 0 1 0 12 13.6 A1.6 1.6 0 1 0 12 10.4 Z M12 17.4 A1.6 1.6 0 1 0 12 20.6 A1.6 1.6 0 1 0 12 17.4 Z";
+}
+
+// One icon: `commands` takes a path from Icons. Lines by default; `filled` for the dot icons.
+export component Icon inherits Path {
+    in property <brush> tint: Theme.ink;
+    in property <bool> filled;
+
+    width: Metrics.icon-size;
+    height: Metrics.icon-size;
+    viewbox-width: 24;
+    viewbox-height: 24;
+    stroke: root.filled ? transparent : root.tint;
+    stroke-width: 1.6px;
+    fill: root.filled ? root.tint : transparent;
+}
+
+// A small square button holding one icon: the "⋮" and "···" menus.
+export component IconButton inherits Rectangle {
+    in property <string> icon;
+    in property <bool> filled;
+    // Read by screen readers.
+    in property <string> label;
+    callback clicked();
+
+    width: Metrics.icon-button;
+    height: Metrics.icon-button;
+    border-radius: Metrics.radius-sm;
+    background: touch.has-hover ? Theme.element : transparent;
+    accessible-role: button;
+    accessible-label: root.label;
+
+    Icon {
+        x: (parent.width - self.width) / 2;
+        y: (parent.height - self.height) / 2;
+        width: Metrics.icon-size-small;
+        height: Metrics.icon-size-small;
+        commands: root.icon;
+        filled: root.filled;
+        tint: touch.has-hover ? Theme.ink-strong : Theme.ink;
+    }
+
+    touch := TouchArea {
+        x: 0px;
+        y: 0px;
+        width: parent.width;
+        height: parent.height;
+        clicked => {
+            root.clicked();
+        }
+    }
+}
+
+// A full-width text button on the surface colour, like "New Key".
+export component TextButton inherits Rectangle {
+    in property <string> text;
+    in property <bool> enabled: true;
+    callback clicked();
+
+    height: Metrics.button-height;
+    border-radius: Metrics.radius-md;
+    border-width: 1px;
+    border-color: Theme.line;
+    background: root.enabled && touch.has-hover ? Theme.element : Theme.surface;
+    opacity: root.enabled ? 1 : 0.5;
+    accessible-role: button;
+    accessible-label: root.text;
+
+    Text {
+        x: 0px;
+        y: 0px;
+        width: parent.width;
+        height: parent.height;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+        text: root.text;
+        color: Theme.ink-strong;
+        font-size: Metrics.font-body;
+        font-weight: 500;
+    }
+
+    touch := TouchArea {
+        x: 0px;
+        y: 0px;
+        width: parent.width;
+        height: parent.height;
+        enabled: root.enabled;
+        clicked => {
+            root.clicked();
+        }
+    }
+}
+
+// One line of a pop-up menu.
+export component PopupItem inherits Rectangle {
+    in property <string> text;
+    callback clicked();
+
+    height: Metrics.row-height;
+    border-radius: Metrics.radius-sm;
+    background: touch.has-hover ? Theme.element : transparent;
+    accessible-role: button;
+    accessible-label: root.text;
+
+    Text {
+        x: Metrics.space-sm;
+        y: 0px;
+        width: parent.width - 2 * Metrics.space-sm;
+        height: parent.height;
+        vertical-alignment: center;
+        text: root.text;
+        color: Theme.ink-strong;
+        font-size: Metrics.font-body;
+    }
+
+    touch := TouchArea {
+        x: 0px;
+        y: 0px;
+        width: parent.width;
+        height: parent.height;
+        clicked => {
+            root.clicked();
+        }
+    }
+}

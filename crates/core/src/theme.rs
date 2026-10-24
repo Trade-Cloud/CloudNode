@@ -73,7 +73,9 @@ pub struct TerminalPalette {
 /// Colour tokens for one appearance.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Tokens {
-    /// The left panel (sidebar).
+    /// The icon rail at the window's left edge.
+    pub rail_bg: Rgba,
+    /// The left panel (sidebar) the rail opens.
     pub sidebar_bg: Rgba,
     /// The middle of the window, behind the session panel.
     pub content_bg: Rgba,
@@ -112,6 +114,7 @@ impl Tokens {
     /// The dark appearance, CloudNode's default. The six base colours are TradeCloud's; the
     /// hover, strong-text and strong-line tints are derived from them.
     pub const DARK: Self = Self {
+        rail_bg: BACKGROUND,
         sidebar_bg: BACKGROUND,
         content_bg: BACKGROUND,
         surface: SURFACE,
@@ -179,6 +182,7 @@ mod tests {
     #[test]
     fn dark_tokens_put_each_base_colour_in_its_role() {
         let t = Tokens::DARK;
+        assert_eq!(t.rail_bg, Rgba::hex(0x171e28));
         assert_eq!(t.sidebar_bg, Rgba::hex(0x171e28));
         assert_eq!(t.content_bg, Rgba::hex(0x171e28));
         assert_eq!(t.surface, Rgba::hex(0x232b36));
