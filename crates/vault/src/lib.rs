@@ -13,9 +13,7 @@
 //!   data, so a tampered header fails to open instead of being trusted.
 //! - Keys and decrypted secrets live in `zeroize`-on-drop buffers and are never logged or shown
 //!   in `Debug` output.
-//! - Every save goes through [`atomic::write`]: a crash or a full disk never leaves half a vault,
-//!   and on Unix the file is readable by its owner only.
+//! - Every save goes through `cloudnode_fs::atomic::write`: a crash or a full disk never leaves
+//!   half a vault, and on Unix the file is readable by its owner only.
 
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
-
-pub mod atomic;

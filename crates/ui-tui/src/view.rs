@@ -4,6 +4,7 @@ use std::borrow::Cow;
 
 use cloudnode_core::time::iso_date;
 use cloudnode_keys::{Details, LocalKey, Scan, ScanError};
+use cloudnode_ssh::config::{ConfigError, HostsFile};
 use ratatui::Frame;
 use ratatui::layout::{Alignment, Constraint, Layout, Rect};
 use ratatui::style::{Modifier, Style};
@@ -12,54 +13,95 @@ use ratatui::widgets::{Block, BorderType, Paragraph};
 
 use crate::palette::Palette;
 
-/// The sidebar's width in columns: about the window's 260 px sidebar at its 13 px font.
+/// The sidebar's width in columns: about the window's 248 px panel at its 13 px font.
 const SIDEBAR_COLS: u16 = 32;
-/// Keys listed in the sidebar (two lines each) before "… and N more".
-const MAX_KEYS: usize = 5;
 
-pub fn draw(frame: &mut Frame, p: &Palette, keys: &Result<Scan, ScanError>) {
+/// What the sidebar lists, read once at start-up.
+pub struct Data {
+    pub hosts: Result<HostsFile, ConfigError>,
+    pub keys: Result<Scan, ScanError>,
+}
+
+/// Which list the sidebar shows, as the window's rail picks Home or Keys.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Pane {
+    Servers,
+    Keys,
+}
+
+impl Pane {
+    /// The other list, for Tab.
+    pub fn other(self) -> Self {
+        match self {
+            Self::Servers => Self::Keys,
+            Self::Keys => Self::Servers,
+        }
+    }
+}
+
+pub fn draw(frame: &mut Frame, p: &Palette, data: &Data, pane: Pane) {
     let [body, status] = Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).areas(frame.area());
     let [sidebar, sessions] = Layout::horizontal([Constraint::Length(SIDEBAR_COLS), Constraint::Min(0)]).areas(body);
-    draw_sidebar(frame, sidebar, p, keys);
+    draw_sidebar(frame, sidebar, p, data, pane);
     draw_sessions(frame, sessions, p);
     draw_status(frame, status, p);
 }
 
-/// The host lists, with Key Management at the bottom, as in the window.
-fn draw_sidebar(frame: &mut Frame, area: Rect, p: &Palette, keys: &Result<Scan, ScanError>) {
-    let title = Span::styled(" CloudNode ", Style::new().fg(p.accent).add_modifier(Modifier::BOLD));
-    let block = panel(p).title(Line::from(title)).style(Style::new().bg(p.sidebar_bg));
+/// The sidebar: tabs for Servers and Keys in its border, and the open list inside.
+fn draw_sidebar(frame: &mut Frame, area: Rect, p: &Palette, data: &Data, pane: Pane) {
+    let tab = |label: &'static str, open: bool| {
+        let style = if open { Style::new().fg(p.accent).add_modifier(Modifier::BOLD) } else { Style::new().fg(p.ink) };
+        Span::styled(label, style)
+    };
+    let tabs = Line::from(vec![tab(" Servers ", pane == Pane::Servers), tab(" Keys ", pane == Pane::Keys)]);
+    let block = panel(p).title(tabs).style(Style::new().bg(p.sidebar_bg));
     let inner = block.inner(area);
     frame.render_widget(block, area);
 
-    let key_text = key_lines(keys, p);
-    let key_rows = u16::try_from(key_text.len()).unwrap_or(u16::MAX);
-    let [lists, keys_area] = Layout::vertical([Constraint::Min(0), Constraint::Length(key_rows)]).areas(inner);
-    let lists_text = vec![
-        header("FAVORITES", p),
-        hint("  Star a host to keep it here.", p),
-        Line::default(),
-        header("CONNECTED", p),
-        hint("  No open sessions.", p),
-    ];
-    frame.render_widget(Paragraph::new(lists_text), lists);
-    frame.render_widget(Paragraph::new(key_text), keys_area);
+    let lines = match pane {
+        Pane::Servers => server_lines(&data.hosts, p),
+        Pane::Keys => key_lines(&data.keys, p),
+    };
+    frame.render_widget(Paragraph::new(fit(lines, inner.height, p)), inner);
 }
 
-/// Key Management: the keys found in ~/.ssh, two lines each like the window's cards, or why
-/// there are none.
+/// `lines` cut to `rows`, ending with a hint when some didn't fit.
+fn fit(mut lines: Vec<Line<'static>>, rows: u16, p: &Palette) -> Vec<Line<'static>> {
+    let rows = usize::from(rows);
+    if lines.len() > rows && rows > 0 {
+        lines.truncate(rows - 1);
+        lines.push(hint("  … more below; resize to see them", p));
+    }
+    lines
+}
+
+/// Home: the servers ~/.ssh/config names, two lines each like the window's rows, or why there
+/// are none.
+fn server_lines(hosts: &Result<HostsFile, ConfigError>, p: &Palette) -> Vec<Line<'static>> {
+    let mut lines = vec![header("SERVERS", p)];
+    match hosts {
+        Err(e) => lines.push(Line::styled(format!("  {e}"), Style::new().fg(p.bad))),
+        Ok(file) if file.hosts.is_empty() => lines.push(hint(format!("  No servers in {}", cloudnode_fs::tilde(&file.path)), p)),
+        Ok(file) => {
+            for host in &file.hosts {
+                lines.push(Line::styled(format!("  {}", host.alias), Style::new().fg(p.ink_strong).add_modifier(Modifier::BOLD)));
+                lines.push(Line::styled(format!("    {}", host.destination()), Style::new().fg(p.ink)));
+            }
+        }
+    }
+    lines
+}
+
+/// Keys: the keys found in ~/.ssh, two lines each like the window's cards, or why there are none.
 fn key_lines(keys: &Result<Scan, ScanError>, p: &Palette) -> Vec<Line<'static>> {
-    let mut lines = vec![header("KEY MANAGEMENT", p)];
+    let mut lines = vec![header("KEYS", p)];
     match keys {
         Err(e) => lines.push(Line::styled(format!("  {e}"), Style::new().fg(p.bad))),
-        Ok(scan) if scan.keys.is_empty() => lines.push(hint(format!("  No keys in {}", cloudnode_keys::tilde(&scan.dir)), p)),
+        Ok(scan) if scan.keys.is_empty() => lines.push(hint(format!("  No keys in {}", cloudnode_fs::tilde(&scan.dir)), p)),
         Ok(scan) => {
-            for key in scan.keys.iter().take(MAX_KEYS) {
+            for key in &scan.keys {
                 lines.push(Line::styled(format!("  {}", key.name), Style::new().fg(p.ink_strong).add_modifier(Modifier::BOLD)));
                 lines.push(key_summary(key, p));
-            }
-            if scan.keys.len() > MAX_KEYS {
-                lines.push(hint(format!("  … and {} more", scan.keys.len() - MAX_KEYS), p));
             }
         }
     }
@@ -94,9 +136,12 @@ fn draw_sessions(frame: &mut Frame, area: Rect, p: &Palette) {
 
 /// The key hints on the bottom row.
 fn draw_status(frame: &mut Frame, area: Rect, p: &Palette) {
+    let badge = Style::new().fg(p.on_accent).bg(p.accent).add_modifier(Modifier::BOLD);
     let line = Line::from(vec![
-        Span::styled(" q ", Style::new().fg(p.on_accent).bg(p.accent).add_modifier(Modifier::BOLD)),
-        Span::styled(" quit", Style::new().fg(p.ink)),
+        Span::styled(" q ", badge),
+        Span::styled(" quit   ", Style::new().fg(p.ink)),
+        Span::styled(" Tab ", badge),
+        Span::styled(" servers / keys", Style::new().fg(p.ink)),
     ]);
     frame.render_widget(Paragraph::new(line).style(Style::new().bg(p.content_bg)), area);
 }
@@ -121,6 +166,7 @@ mod tests {
 
     use cloudnode_core::{KeyAlgorithm, Tokens};
     use cloudnode_keys::PublicDetails;
+    use cloudnode_ssh::config::ConfigHost;
 
     use super::*;
 
@@ -139,7 +185,7 @@ mod tests {
     fn lists_every_key_under_the_header() {
         let lines = key_lines(&scan(2), &Palette::new(&Tokens::DARK));
         let texts: Vec<String> = lines.iter().map(text).collect();
-        assert_eq!(texts, ["KEY MANAGEMENT", "  key0", "    Private key only, no .pub file", "  key1", "    Private key only, no .pub file"]);
+        assert_eq!(texts, ["KEYS", "  key0", "    Private key only, no .pub file", "  key1", "    Private key only, no .pub file"]);
     }
 
     #[test]
@@ -156,10 +202,20 @@ mod tests {
     }
 
     #[test]
-    fn long_lists_end_with_a_count() {
-        let lines = key_lines(&scan(MAX_KEYS + 3), &Palette::new(&Tokens::DARK));
-        assert_eq!(lines.len(), 1 + 2 * MAX_KEYS + 1);
-        assert_eq!(lines.last().map(text).as_deref(), Some("  … and 3 more"));
+    fn long_lists_are_cut_to_fit_with_a_hint() {
+        let p = Palette::new(&Tokens::DARK);
+        let lines = fit(key_lines(&scan(10), &p), 6, &p);
+        assert_eq!(lines.len(), 6);
+        assert_eq!(lines.last().map(text).as_deref(), Some("  … more below; resize to see them"));
+        assert_eq!(fit(key_lines(&scan(1), &p), 6, &p).len(), 3);
+    }
+
+    #[test]
+    fn servers_show_name_and_destination() {
+        let host = ConfigHost { alias: "web".into(), hostname: "203.0.113.10".into(), user: Some("deploy".into()), port: 2222 };
+        let hosts = Ok(HostsFile { path: PathBuf::from("/tmp/ssh/config"), hosts: vec![host] });
+        let texts: Vec<String> = server_lines(&hosts, &Palette::new(&Tokens::DARK)).iter().map(text).collect();
+        assert_eq!(texts, ["SERVERS", "  web", "    deploy@203.0.113.10:2222"]);
     }
 
     #[test]

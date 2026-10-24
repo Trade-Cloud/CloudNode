@@ -7,17 +7,22 @@ use std::path::{Path, PathBuf};
 /// Writes `bytes` to `path` through a temporary file beside it and a rename, so a crash, a power
 /// cut or a full disk leaves the previous file untouched. The data reaches the disk (`sync_all`)
 /// before the rename. On Unix the file is created readable and writable by its owner only
-/// (`0600`), since it holds secrets.
+/// (`0600`), since it may hold secrets.
 ///
-/// The parent folder must exist.
+/// When `path` is a symbolic link (dotfile managers link `~/.ssh/config` into a repository), the
+/// file it points at is written and the link stays. The parent folder must exist.
 pub fn write(path: &Path, bytes: &[u8]) -> io::Result<()> {
-    let tmp = temp_path(path)?;
+    let target = match fs::symlink_metadata(path) {
+        Ok(metadata) if metadata.file_type().is_symlink() => fs::canonicalize(path)?,
+        _ => path.to_path_buf(),
+    };
+    let tmp = temp_path(&target)?;
     if let Err(e) = write_new(&tmp, bytes) {
         let _ = fs::remove_file(&tmp);
         return Err(e);
     }
     // On Windows `rename` replaces an existing file too (MoveFileExW with MOVEFILE_REPLACE_EXISTING).
-    if let Err(e) = fs::rename(&tmp, path) {
+    if let Err(e) = fs::rename(&tmp, &target) {
         let _ = fs::remove_file(&tmp);
         return Err(e);
     }
@@ -56,7 +61,7 @@ mod tests {
 
     impl TempDir {
         fn new(name: &str) -> Self {
-            let dir = std::env::temp_dir().join(format!("cloudnode-vault-{}-{name}", std::process::id()));
+            let dir = std::env::temp_dir().join(format!("cloudnode-fs-{}-{name}", std::process::id()));
             let _ = fs::remove_dir_all(&dir);
             fs::create_dir_all(&dir).unwrap();
             Self(dir)
@@ -97,6 +102,19 @@ mod tests {
     #[test]
     fn a_path_without_a_file_name_is_rejected() {
         assert_eq!(write(Path::new("/"), b"data").map_err(|e| e.kind()), Err(io::ErrorKind::InvalidInput));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn writes_through_a_symlink_and_keeps_it() {
+        let dir = TempDir::new("symlink");
+        let real = dir.0.join("dotfiles-config");
+        let link = dir.0.join("config");
+        fs::write(&real, b"old").unwrap();
+        std::os::unix::fs::symlink(&real, &link).unwrap();
+        write(&link, b"new").unwrap();
+        assert!(fs::symlink_metadata(&link).unwrap().file_type().is_symlink());
+        assert_eq!(fs::read(&real).unwrap(), b"new");
     }
 
     #[cfg(unix)]

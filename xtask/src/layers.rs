@@ -3,7 +3,7 @@
 //!
 //! | Layer | Crates | May use |
 //! |---|---|---|
-//! | L0 | `core` | no workspace crate |
+//! | L0 | `core`, `fs` | no workspace crate |
 //! | L1 | `vault`, `keys`, `ssh`, `term` | L0 |
 //! | L2 | `ui-slint`, `ui-tui` | L0, L1, UI toolkits |
 //! | apps | `apps/*` | everything |
@@ -14,7 +14,7 @@ use std::fs;
 use std::path::Path;
 
 /// Each crate folder under `crates/` and its layer.
-const LAYERS: &[(&str, u8)] = &[("core", 0), ("vault", 1), ("keys", 1), ("ssh", 1), ("term", 1), ("ui-slint", 2), ("ui-tui", 2)];
+const LAYERS: &[(&str, u8)] = &[("core", 0), ("fs", 0), ("vault", 1), ("keys", 1), ("ssh", 1), ("term", 1), ("ui-slint", 2), ("ui-tui", 2)];
 
 /// The layer of the interfaces, the only one allowed UI toolkits.
 const UI_LAYER: u8 = 2;

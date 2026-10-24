@@ -1,5 +1,6 @@
-import { Theme, Metrics } from "theme.slint";
-import { Icons, IconButton, TextButton, PopupItem } from "icons.slint";
+import { Theme, Metrics, Chrome } from "theme.slint";
+import { Icons } from "icons.slint";
+import { IconButton, TextButton, PanelHeader, SearchField } from "widgets.slint";
 
 // What is known about one key, without its private half.
 export enum KeyState {
@@ -164,32 +165,27 @@ export component KeyCard inherits Rectangle {
     }
 }
 
-// Key Management at the bottom of the sidebar: the keys in ~/.ssh as cards, a menu to read the
-// folder again, and "New Key". The list scrolls beyond Metrics.keys-max-height.
-export component KeyManagement inherits Rectangle {
+// The Keys panel: the keys in ~/.ssh as cards, searchable, with a "···" menu to read the folder
+// again and "New Key" at the bottom.
+export component KeysPanel inherits Rectangle {
     VerticalLayout {
-        spacing: Metrics.space-sm;
+        padding: Metrics.space-md;
+        // Below macOS's window buttons, which sit over the top of the sidebar.
+        padding-top: Chrome.titlebar-inset + Metrics.space-md;
+        spacing: Metrics.space-md;
 
-        HorizontalLayout {
-            spacing: Metrics.space-sm;
-
-            Text {
-                text: @tr("KEY MANAGEMENT");
-                color: Theme.ink;
-                font-size: Metrics.font-caption;
-                font-weight: 600;
-                letter-spacing: Metrics.header-letter-spacing;
-                vertical-alignment: center;
-                horizontal-stretch: 1;
+        SearchField {
+            placeholder: @tr("Search keys…");
+            edited(text) => {
+                KeyList.search(text);
             }
+        }
 
-            IconButton {
-                icon: Icons.more-horizontal;
-                filled: true;
-                label: @tr("Key Management options");
-                clicked => {
-                    menu.show();
-                }
+        PanelHeader {
+            title: @tr("KEYS");
+            menu-label: @tr("Key list options");
+            refresh => {
+                KeyList.refresh();
             }
         }
 
@@ -221,8 +217,9 @@ export component KeyManagement inherits Rectangle {
             wrap: word-wrap;
         }
 
+        // Takes the rest of the panel and scrolls.
         scroller := Flickable {
-            height: min(list.preferred-height, Metrics.keys-max-height);
+            vertical-stretch: 1;
             content-width: self.width;
             // Set by hand: a Flickable can't size itself from repeated children.
             content-height: list.preferred-height;
@@ -241,34 +238,6 @@ export component KeyManagement inherits Rectangle {
         TextButton {
             text: @tr("New Key");
             enabled: false;
-        }
-    }
-
-    menu := PopupWindow {
-        x: root.width - self.width;
-        y: Metrics.icon-button + Metrics.space-xs;
-        width: 180px;
-        // One item for now: Import, Open folder and the like join it with key generation.
-        height: Metrics.row-height + 2 * Metrics.space-xs;
-
-        Rectangle {
-            width: parent.width;
-            height: parent.height;
-            background: Theme.surface;
-            border-radius: Metrics.radius-md;
-            border-width: 1px;
-            border-color: Theme.line-strong;
-
-            VerticalLayout {
-                padding: Metrics.space-xs;
-
-                PopupItem {
-                    text: @tr("Refresh");
-                    clicked => {
-                        KeyList.refresh();
-                    }
-                }
-            }
         }
     }
 }

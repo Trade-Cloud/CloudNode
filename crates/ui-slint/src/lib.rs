@@ -7,6 +7,7 @@
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
 mod chrome;
+mod hosts;
 mod keys;
 pub mod theme;
 
@@ -20,16 +21,17 @@ mod generated {
     slint::include_modules!();
 }
 
-pub use generated::{Chrome, KeyEntry, KeyList, KeyState, MainWindow, Theme};
+pub use generated::{Chrome, HostEntry, HostList, KeyEntry, KeyList, KeyState, MainWindow, Theme};
 pub use slint::PlatformError;
 
-/// Opens the main window and runs until it is closed. The key list fills in once `~/.ssh` has
-/// been read in the background.
+/// Opens the main window and runs until it is closed. The server and key lists fill in once
+/// `~/.ssh` has been read in the background.
 pub fn run() -> Result<(), PlatformError> {
     chrome::select_backend()?;
     let window = MainWindow::new()?;
     theme::apply(&window, &cloudnode_core::Tokens::DARK);
     chrome::apply(&window);
+    hosts::load(&window);
     keys::load(&window);
     window.run()
 }

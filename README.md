@@ -42,8 +42,9 @@
 
 CloudNode is an SSH client for developers and system administrators who want it to open
 instantly, keep their keys safe on their own machine, and stay out of the way. The window is
-mostly terminal: session tabs in the title bar, a slim sidebar with your hosts and a compact
-search, and Key Management for your Ed25519 and RSA keys at the bottom of the sidebar. No
+mostly terminal: session tabs in the title bar and a slim sidebar with an icon rail. Home lists
+your servers (the ones in your `~/.ssh/config`, and the ones you add), Keys your Ed25519 and RSA
+keys, each with a compact search. No
 oversized panels, no global search bar, no profile buttons.
 
 ## Features
@@ -66,7 +67,7 @@ oversized panels, no global search bar, no profile buttons.
   <tr>
     <td width="33%" valign="top">
       <h3>🗂️ Hosts at hand</h3>
-      Favorites, Connected and your own groups in the sidebar, with one search over hosts and keys.
+      Your servers in Home, read from <code>~/.ssh/config</code>, with search and New Server, which adds a server there so <code>ssh</code> sees it too.
     </td>
     <td width="33%" valign="top">
       <h3>🎨 Calm by design</h3>

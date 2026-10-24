@@ -5,7 +5,8 @@
 use std::thread;
 
 use cloudnode_core::time::iso_date;
-use cloudnode_keys::{Details, LocalKey, Scan, ScanError, tilde};
+use cloudnode_fs::tilde;
+use cloudnode_keys::{Details, LocalKey, Scan, ScanError};
 use slint::{ComponentHandle, Model, ModelRc, SharedString, VecModel};
 
 use crate::{KeyEntry, KeyList, KeyState, MainWindow};
@@ -36,7 +37,7 @@ pub fn load(window: &MainWindow) {
 /// Reads `~/.ssh` in the background; the list fills in when that is done.
 fn read(window: &MainWindow) {
     let list = window.global::<KeyList>();
-    if let Some(dir) = cloudnode_keys::home_ssh_dir() {
+    if let Some(dir) = cloudnode_fs::home_ssh_dir() {
         list.set_folder(tilde(&dir).into());
     }
     list.set_loading(true);

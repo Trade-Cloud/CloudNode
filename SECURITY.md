@@ -27,10 +27,14 @@ logs first.
   URLs, or spoof what the user sees.
 - Reading the user's `~/.ssh`: anything that makes CloudNode read private key contents while
   listing keys, follow a path out of the folder unexpectedly, or hang or crash on an odd file.
+- Adding a server to `~/.ssh/config`: anything that loses or alters what the file already holds,
+  writes outside it, replaces a symbolic link with a file, or lets typed values inject other
+  settings.
 - Key import and export, and file paths.
 - Dependencies, packaging, signing and release integrity.
 
 ## Current state
 
 CloudNode is pre-alpha: the vault, SSH sessions and the terminal are not implemented yet
-(`ROADMAP.md`). Until they are, CloudNode stores nothing and connects to nothing.
+(`ROADMAP.md`). Until they are, CloudNode connects to nothing, and the only file it writes is
+`~/.ssh/config`, when the user adds a server with New Server.

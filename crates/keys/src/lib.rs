@@ -9,4 +9,4 @@
 
 pub mod local;
 
-pub use local::{Details, LocalKey, PublicDetails, Scan, ScanError, home_ssh_dir, parse_public_key, scan_dir, scan_home, tilde};
+pub use local::{Details, LocalKey, PublicDetails, Scan, ScanError, parse_public_key, scan_dir, scan_home};

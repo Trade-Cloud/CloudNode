@@ -1,12 +1,13 @@
 import { Theme, Metrics, Chrome } from "theme.slint";
 import { Icons, Icon } from "icons.slint";
 
-// What the sidebar's panel shows. Only `hosts` has content yet; the others say they are coming.
+// What the sidebar's panel shows. `hosts` (Home) and `keys` have content; the others say they
+// are coming.
 export enum Panel {
     hosts,
+    keys,
     snippets,
     forwarding,
-    identities,
     sftp,
     help,
     settings,
@@ -74,10 +75,19 @@ export component NavRail inherits Rectangle {
 
         RailItem {
             icon: Icons.home;
-            label: @tr("Hosts");
+            label: @tr("Home");
             active: root.panel == Panel.hosts;
             clicked => {
                 root.panel = Panel.hosts;
+            }
+        }
+
+        RailItem {
+            icon: Icons.key;
+            label: @tr("Keys");
+            active: root.panel == Panel.keys;
+            clicked => {
+                root.panel = Panel.keys;
             }
         }
 
@@ -96,15 +106,6 @@ export component NavRail inherits Rectangle {
             active: root.panel == Panel.forwarding;
             clicked => {
                 root.panel = Panel.forwarding;
-            }
-        }
-
-        RailItem {
-            icon: Icons.people;
-            label: @tr("Identities");
-            active: root.panel == Panel.identities;
-            clicked => {
-                root.panel = Panel.identities;
             }
         }
 

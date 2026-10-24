@@ -2,9 +2,11 @@ import { Metrics } from "theme.slint";
 import { Shell } from "shell.slint";
 
 // Rust sets the colours on the Theme global (`theme::apply`), the title bar room on Chrome
-// (`chrome.rs`) and fills the key list (`keys.rs`), so the main file has to export them. These
-// re-exports are their only mention here: the window's contents use them through Shell.
+// (`chrome.rs`), and fills the server and key lists (`hosts.rs`, `keys.rs`), so the main file has
+// to export them. These re-exports are their only mention here: the window's contents use them
+// through Shell.
 export { Theme, Chrome } from "theme.slint";
+export { HostList, HostEntry } from "hosts.slint";
 export { KeyList, KeyEntry, KeyState } from "keys.slint";
 
 export component MainWindow inherits Window {

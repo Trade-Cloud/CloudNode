@@ -12,5 +12,7 @@ workspace = true
 
 [dependencies]
 cloudnode-core = { workspace = true }
+cloudnode-fs = { workspace = true }
 cloudnode-keys = { workspace = true }
+cloudnode-ssh = { workspace = true }
 ratatui = { workspace = true }

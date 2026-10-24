@@ -104,6 +104,8 @@ pub struct Tokens {
     pub on_accent: Rgba,
     /// Selected text and rows.
     pub selection: Rgba,
+    /// Dims the window behind a dialog.
+    pub scrim: Rgba,
     pub good: Rgba,
     pub warn: Rgba,
     pub bad: Rgba,
@@ -129,6 +131,7 @@ impl Tokens {
         accent_hover: Rgba::hex(0x62c9ea),
         on_accent: BACKGROUND,
         selection: ACCENT.with_alpha(56),
+        scrim: BACKGROUND.with_alpha(184),
         good: Rgba::hex(0x32d74b),
         warn: Rgba::hex(0xffd60a),
         bad: Rgba::hex(0xff453a),

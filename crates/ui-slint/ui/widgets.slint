@@ -1,0 +1,300 @@
+import { Theme, Metrics, Chrome } from "theme.slint";
+import { Icons, Icon } from "icons.slint";
+
+// A small square button holding one icon: the "⋮" and "···" menus.
+export component IconButton inherits Rectangle {
+    in property <string> icon;
+    in property <bool> filled;
+    // Read by screen readers.
+    in property <string> label;
+    callback clicked();
+
+    width: Metrics.icon-button;
+    height: Metrics.icon-button;
+    border-radius: Metrics.radius-sm;
+    background: touch.has-hover ? Theme.element : transparent;
+    accessible-role: button;
+    accessible-label: root.label;
+
+    Icon {
+        x: (parent.width - self.width) / 2;
+        y: (parent.height - self.height) / 2;
+        width: Metrics.icon-size-small;
+        height: Metrics.icon-size-small;
+        commands: root.icon;
+        filled: root.filled;
+        tint: touch.has-hover ? Theme.ink-strong : Theme.ink;
+    }
+
+    touch := TouchArea {
+        x: 0px;
+        y: 0px;
+        width: parent.width;
+        height: parent.height;
+        clicked => {
+            root.clicked();
+        }
+    }
+}
+
+// A text button. On the surface colour by default ("New Key", "Cancel"); `primary` fills it with
+// the accent for the one action a panel or dialog is for ("New Server", "Add Server").
+export component TextButton inherits Rectangle {
+    in property <string> text;
+    in property <bool> enabled: true;
+    in property <bool> primary;
+    callback clicked();
+
+    height: Metrics.button-height;
+    border-radius: Metrics.radius-md;
+    border-width: 1px;
+    border-color: root.primary ? Theme.accent : Theme.line;
+    background: root.primary
+        ? (root.enabled && touch.has-hover ? Theme.accent-hover : Theme.accent)
+        : (root.enabled && touch.has-hover ? Theme.element : Theme.surface);
+    opacity: root.enabled ? 1 : 0.5;
+    accessible-role: button;
+    accessible-label: root.text;
+
+    Text {
+        x: 0px;
+        y: 0px;
+        width: parent.width;
+        height: parent.height;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+        text: root.text;
+        color: root.primary ? Theme.on-accent : Theme.ink-strong;
+        font-size: Metrics.font-body;
+        font-weight: 500;
+    }
+
+    touch := TouchArea {
+        x: 0px;
+        y: 0px;
+        width: parent.width;
+        height: parent.height;
+        enabled: root.enabled;
+        clicked => {
+            root.clicked();
+        }
+    }
+}
+
+// One line of a pop-up menu.
+export component PopupItem inherits Rectangle {
+    in property <string> text;
+    callback clicked();
+
+    height: Metrics.row-height;
+    border-radius: Metrics.radius-sm;
+    background: touch.has-hover ? Theme.element : transparent;
+    accessible-role: button;
+    accessible-label: root.text;
+
+    Text {
+        x: Metrics.space-sm;
+        y: 0px;
+        width: parent.width - 2 * Metrics.space-sm;
+        height: parent.height;
+        vertical-alignment: center;
+        text: root.text;
+        color: Theme.ink-strong;
+        font-size: Metrics.font-body;
+    }
+
+    touch := TouchArea {
+        x: 0px;
+        y: 0px;
+        width: parent.width;
+        height: parent.height;
+        clicked => {
+            root.clicked();
+        }
+    }
+}
+
+// A section or panel title: small capitals, spaced out a little.
+export component SectionHeader inherits Text {
+    color: Theme.ink;
+    font-size: Metrics.font-caption;
+    font-weight: 600;
+    letter-spacing: Metrics.header-letter-spacing;
+}
+
+// A panel's title row: the title, and a "···" menu that for now holds Refresh.
+export component PanelHeader inherits Rectangle {
+    in property <string> title;
+    // Read by screen readers for the "···" button.
+    in property <string> menu-label;
+    callback refresh();
+
+    height: Metrics.icon-button;
+
+    HorizontalLayout {
+        spacing: Metrics.space-sm;
+
+        SectionHeader {
+            text: root.title;
+            vertical-alignment: center;
+            horizontal-stretch: 1;
+        }
+
+        IconButton {
+            icon: Icons.more-horizontal;
+            filled: true;
+            label: root.menu-label;
+            clicked => {
+                menu.show();
+            }
+        }
+    }
+
+    menu := PopupWindow {
+        x: root.width - self.width;
+        y: root.height + Metrics.space-xs;
+        width: 180px;
+        height: Metrics.row-height + 2 * Metrics.space-xs;
+
+        Rectangle {
+            width: parent.width;
+            height: parent.height;
+            background: Theme.surface;
+            border-radius: Metrics.radius-md;
+            border-width: 1px;
+            border-color: Theme.line-strong;
+
+            VerticalLayout {
+                padding: Metrics.space-xs;
+
+                PopupItem {
+                    text: @tr("Refresh");
+                    clicked => {
+                        root.refresh();
+                    }
+                }
+            }
+        }
+    }
+}
+
+// The search box at the top of a panel; reports every edit.
+export component SearchField inherits Rectangle {
+    in property <string> placeholder;
+    in-out property <string> text <=> input.text;
+    callback edited(string);
+
+    height: Metrics.field-height;
+    border-radius: Metrics.radius-md;
+    border-width: 1px;
+    border-color: input.has-focus ? Theme.accent : Theme.line;
+    background: Theme.surface;
+
+    Icon {
+        x: Metrics.space-sm;
+        y: (parent.height - self.height) / 2;
+        width: Metrics.icon-size-small;
+        height: Metrics.icon-size-small;
+        commands: Icons.search;
+        tint: input.has-focus ? Theme.ink-strong : Theme.ink;
+    }
+
+    input := TextInput {
+        x: Metrics.space-sm + Metrics.icon-size-small + Metrics.space-sm;
+        y: 0px;
+        width: parent.width - self.x - Metrics.space-sm;
+        height: parent.height;
+        vertical-alignment: center;
+        single-line: true;
+        color: Theme.ink-strong;
+        selection-background-color: Theme.selection;
+        font-size: Metrics.font-body;
+        accessible-label: root.placeholder;
+        edited => {
+            root.edited(self.text);
+        }
+    }
+
+    if root.text == "": Text {
+        x: input.x;
+        y: 0px;
+        width: input.width;
+        height: parent.height;
+        vertical-alignment: center;
+        text: root.placeholder;
+        color: Theme.faint;
+        font-size: Metrics.font-body;
+    }
+}
+
+// A labelled text box for forms. Enter reports `accepted`.
+export component TextField inherits Rectangle {
+    in property <string> label;
+    in property <string> placeholder;
+    in-out property <string> text <=> input.text;
+    callback accepted();
+
+    public function focus-input() {
+        input.focus();
+    }
+
+    VerticalLayout {
+        spacing: Metrics.space-xs;
+
+        Text {
+            text: root.label;
+            color: Theme.ink;
+            font-size: Metrics.font-caption;
+            font-weight: 600;
+        }
+
+        Rectangle {
+            height: Metrics.field-height;
+            border-radius: Metrics.radius-md;
+            border-width: 1px;
+            border-color: input.has-focus ? Theme.accent : Theme.line-strong;
+            background: Theme.content-bg;
+
+            input := TextInput {
+                x: Metrics.space-sm;
+                y: 0px;
+                width: parent.width - 2 * Metrics.space-sm;
+                height: parent.height;
+                vertical-alignment: center;
+                single-line: true;
+                color: Theme.ink-strong;
+                selection-background-color: Theme.selection;
+                font-size: Metrics.font-body;
+                accessible-label: root.label;
+                accepted => {
+                    root.accepted();
+                }
+            }
+
+            if root.text == "": Text {
+                x: input.x;
+                y: 0px;
+                width: input.width;
+                height: parent.height;
+                vertical-alignment: center;
+                text: root.placeholder;
+                color: Theme.faint;
+                font-size: Metrics.font-body;
+            }
+        }
+    }
+}
+
+// A 1 px vertical separator between two columns. It starts below the title bar band, so the band
+// across the top of the window stays one clean strip for macOS's window buttons.
+export component VerticalHairline inherits Rectangle {
+    width: 1px;
+
+    Rectangle {
+        x: 0px;
+        y: Chrome.titlebar-inset;
+        width: parent.width;
+        height: max(parent.height - Chrome.titlebar-inset, 0px);
+        background: Theme.line;
+    }
+}

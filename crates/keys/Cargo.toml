@@ -12,6 +12,6 @@ workspace = true
 
 [dependencies]
 cloudnode-core = { workspace = true }
-dirs = { workspace = true }
+cloudnode-fs = { workspace = true }
 ssh-key = { workspace = true }
 thiserror = { workspace = true }

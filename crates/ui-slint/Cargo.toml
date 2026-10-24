@@ -20,7 +20,9 @@ todo = "warn"
 
 [dependencies]
 cloudnode-core = { workspace = true }
+cloudnode-fs = { workspace = true }
 cloudnode-keys = { workspace = true }
+cloudnode-ssh = { workspace = true }
 log = { workspace = true }
 slint = { workspace = true }
 

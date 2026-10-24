@@ -30,10 +30,11 @@ rules, attribution, the brand split), adapted to an SSH client.
 
 ```text
 crates/
-  core      cloudnode-core      L0  pure data, no I/O: hosts, groups, key descriptions, colour tokens
+  core      cloudnode-core      L0  pure data, no I/O: hosts, groups, key descriptions, colour tokens, dates
+  fs        cloudnode-fs        L0  where files live (~/.ssh, ~ shortening) and atomic writes
   vault     cloudnode-vault     L1  the encrypted vault: master password, Argon2id, AEAD, atomic writes
-  keys      cloudnode-keys      L1  SSH keys on this machine: reads ~/.ssh (public keys only) for Key Management
-  ssh       cloudnode-ssh       L1  sessions on russh + Tokio: host keys, sign-in, PTY, resize
+  keys      cloudnode-keys      L1  SSH keys on this machine: reads ~/.ssh (public keys only) for the Keys panel
+  ssh       cloudnode-ssh       L1  ~/.ssh/config (Home's servers, New Server); later sessions on russh + Tokio
   term      cloudnode-term      L1  terminal emulation: escape sequences, cell grid, scrollback
   ui-slint  cloudnode-ui-slint  L2  the desktop interface: .slint layout (ui/), theme, terminal renderer
   ui-tui    cloudnode-ui-tui    L2  the console interface: Ratatui views
@@ -92,7 +93,8 @@ writes or URL opens triggered by escape sequences without the user's action).
 - Private keys, passwords and the master password never appear in logs, `Debug` output, error
   messages, crash reports or files outside the vault. Types that hold secrets implement a
   redacting `Debug` and zeroize on drop.
-- Files that hold secrets are written through `cloudnode_vault::atomic::write` (owner-only on Unix).
+- Files that hold secrets, and `~/.ssh/config`, are written through `cloudnode_fs::atomic::write`
+  (owner-only on Unix, through symbolic links rather than over them).
 - Reading `~/.ssh` (`cloudnode-keys`) touches public key files only. Of any other file it reads
   the first few bytes, to tell a private key by its header; private key contents are read only
   when a key is actually used, and never kept beyond that.
@@ -125,14 +127,23 @@ writes or URL opens triggered by escape sequences without the user's action).
   window buttons sit over the top of the sidebar (`src/chrome.rs`, through Slint's unstable winit
   0.30 hook). Everything at the top of the window keeps `Chrome.titlebar-inset` free for the buttons
   and for dragging. Windows and Linux keep their native title bars, where the inset is 0.
-- The sidebar is an icon rail (`ui/rail.slint`: Hosts, Snippets, Port forwarding, Identities,
-  SFTP; Help and Settings at the bottom) and the panel it opens. The open panel's icon is drawn in
-  the accent, on an element-coloured square, with a short accent bar at the rail's edge. The Hosts
-  panel holds a compact search over hosts and keys, the host lists (FAVORITES, CONNECTED, groups)
-  and KEY MANAGEMENT at the bottom: keys as cards (name; type and date; "⋮" for details) and
-  "New Key". Section headers are small capitals with a little letter spacing.
+- The sidebar is an icon rail (`ui/rail.slint`: Home, Keys, Snippets, Port forwarding, SFTP;
+  Help and Settings at the bottom) and the panel it opens. The open panel's icon is drawn in the
+  accent, on an element-coloured square, with a short accent bar at the rail's edge. Every panel
+  is the same shape: a search box, a title row (small capitals, a "···" menu), a list that takes
+  the rest of the height and scrolls, and the panel's one action at the bottom.
+  - Home (`ui/hosts.slint`) lists the servers to connect to, and "New Server" opens a form over
+    the window. Until the vault holds servers (M1) the list is what `~/.ssh/config` names, and a
+    new server is appended to that file as a `Host` block (`cloudnode_ssh::config`), never
+    rewriting what is there.
+  - Keys (`ui/keys.slint`) lists the keys in `~/.ssh` as cards (name; type and date; "⋮" for
+    details) with "New Key".
 - Icons are original line drawings in `ui/icons.slint` (SVG path data on a 24-unit grid), tinted
   with the theme. Add new ones there, drawn in the same style; never copy another app's icons.
+  Build new UI from the pieces in `ui/widgets.slint` (icon and text buttons, menu items,
+  separators).
+- The title bar band across the top of the window is one clean strip: no separator or other
+  element crosses it. Vertical separators are `VerticalHairline`, which starts below the band.
 
 ### Languages
 

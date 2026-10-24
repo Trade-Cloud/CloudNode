@@ -856,11 +856,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "cloudnode-fs"
+version = "0.1.0"
+dependencies = [
+ "dirs",
+]
+
+[[package]]
 name = "cloudnode-keys"
 version = "0.1.0"
 dependencies = [
  "cloudnode-core",
- "dirs",
+ "cloudnode-fs",
  "ssh-key",
  "thiserror 2.0.21",
 ]
@@ -870,6 +877,8 @@ name = "cloudnode-ssh"
 version = "0.1.0"
 dependencies = [
  "cloudnode-core",
+ "cloudnode-fs",
+ "thiserror 2.0.21",
 ]
 
 [[package]]
@@ -891,7 +900,9 @@ name = "cloudnode-ui-slint"
 version = "0.1.0"
 dependencies = [
  "cloudnode-core",
+ "cloudnode-fs",
  "cloudnode-keys",
+ "cloudnode-ssh",
  "log",
  "slint",
  "slint-build",
@@ -911,6 +922,7 @@ name = "cloudnode-vault"
 version = "0.1.0"
 dependencies = [
  "cloudnode-core",
+ "cloudnode-fs",
 ]
 
 [[package]]

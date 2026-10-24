@@ -8,7 +8,7 @@
 use std::collections::BTreeMap;
 use std::fs::{self, File};
 use std::io::{self, Read};
-use std::path::{MAIN_SEPARATOR, Path, PathBuf};
+use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
 use cloudnode_core::KeyAlgorithm;
@@ -78,14 +78,9 @@ pub enum ScanError {
     Folder { path: PathBuf, source: io::Error },
 }
 
-/// The user's `~/.ssh` (on Windows `%USERPROFILE%\.ssh`, where Windows' OpenSSH keeps keys).
-pub fn home_ssh_dir() -> Option<PathBuf> {
-    dirs::home_dir().map(|home| home.join(".ssh"))
-}
-
 /// The keys in the user's `~/.ssh`. A missing folder means no keys, not an error.
 pub fn scan_home() -> Result<Scan, ScanError> {
-    let dir = home_ssh_dir().ok_or(ScanError::NoHome)?;
+    let dir = cloudnode_fs::home_ssh_dir().ok_or(ScanError::NoHome)?;
     scan_dir(&dir)
 }
 
@@ -218,15 +213,6 @@ fn rsa_bits(key: &PublicKey) -> u16 {
     u16::try_from(bits).unwrap_or(u16::MAX)
 }
 
-/// `path` with the home folder written as `~`, as people read and type it: `~/.ssh`.
-pub fn tilde(path: &Path) -> String {
-    match dirs::home_dir().as_deref().and_then(|home| path.strip_prefix(home).ok()) {
-        Some(rest) if rest.as_os_str().is_empty() => "~".to_owned(),
-        Some(rest) => format!("~{MAIN_SEPARATOR}{}", rest.display()),
-        None => path.display().to_string(),
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -357,15 +343,5 @@ mod tests {
         dir.write("huge.pub", &"A".repeat(usize::try_from(MAX_PUBLIC_KEY_BYTES).unwrap() + 10));
         let scan = scan_dir(&dir.0).unwrap();
         assert!(matches!(&scan.keys[0].details, Details::Unreadable(reason) if reason.contains("too large")));
-    }
-
-    #[test]
-    fn the_home_folder_reads_as_a_tilde() {
-        if let Some(home) = dirs::home_dir() {
-            assert_eq!(tilde(&home), "~");
-            assert_eq!(tilde(&home.join(".ssh")), format!("~{MAIN_SEPARATOR}.ssh"));
-        }
-        let elsewhere = Path::new("/definitely/not/home");
-        assert_eq!(tilde(elsewhere), elsewhere.display().to_string());
     }
 }

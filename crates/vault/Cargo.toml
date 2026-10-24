@@ -12,3 +12,4 @@ workspace = true
 
 [dependencies]
 cloudnode-core = { workspace = true }
+cloudnode-fs = { workspace = true }

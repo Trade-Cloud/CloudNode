@@ -30,6 +30,7 @@ pub fn apply(window: &MainWindow, tokens: &Tokens) {
     theme.set_accent_hover(color(tokens.accent_hover));
     theme.set_on_accent(color(tokens.on_accent));
     theme.set_selection(color(tokens.selection));
+    theme.set_scrim(color(tokens.scrim));
     theme.set_good(color(tokens.good));
     theme.set_warn(color(tokens.warn));
     theme.set_bad(color(tokens.bad));

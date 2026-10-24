@@ -19,6 +19,7 @@ todo = "warn"
 [workspace.dependencies]
 # internal
 cloudnode-core = { path = "crates/core" }
+cloudnode-fs = { path = "crates/fs" }
 cloudnode-vault = { path = "crates/vault" }
 cloudnode-keys = { path = "crates/keys" }
 cloudnode-ssh = { path = "crates/ssh" }

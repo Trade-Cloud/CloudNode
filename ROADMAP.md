@@ -2,7 +2,7 @@
 
 **Stage: pre-alpha** · next: M1 (the vault)
 
-> **Last updated:** 2026-10-24 · **Change:** macOS title bar over the sidebar (M4)
+> **Last updated:** 2026-10-24 · **Change:** Home lists servers from `~/.ssh/config` with New Server; Keys gets its own panel (M4)
 
 Each milestone ends with `cargo xtask ci` green and the change described here. Tick a box in the
 same change that lands the work.
@@ -42,10 +42,11 @@ same change that lands the work.
 
 - [x] macOS: transparent, untitled title bar with the window buttons over the sidebar
 - [ ] Session tabs in the title bar band; Windows and Linux equivalents of the macOS title bar
-- [x] Sidebar layout: icon rail (Hosts, Snippets, Port forwarding, Identities, SFTP, Help, Settings) with the open panel in the accent; only Hosts has content yet
-- [ ] Sidebar: host lists from the vault (Favorites, Connected, groups), host editor, search over hosts
-- [x] Key Management lists the keys in `~/.ssh` (name, type, SHA-256 fingerprint; private-only and unreadable keys marked), in the window and the console
-- [x] Key Management as cards: type and creation date, details on "⋮" (fingerprint, comment and file, selectable to copy), search over keys, Refresh in the "···" menu
+- [x] Sidebar layout: icon rail (Home, Keys, Snippets, Port forwarding, SFTP, Help, Settings) with the open panel in the accent; Home and Keys have content
+- [x] Home lists the servers `~/.ssh/config` names, with search and Refresh; "New Server" adds one there as a `Host` block (atomic, through symlinks)
+- [ ] Home: servers from the vault (Favorites, Connected, groups), editing and removing servers, `Include` in the config
+- [x] Keys lists the keys in `~/.ssh` (name, type, SHA-256 fingerprint; private-only and unreadable keys marked), in the window and the console
+- [x] Keys as cards: type and creation date, details on "⋮" (fingerprint, comment and file, selectable to copy), search over keys, Refresh in the "···" menu
 - [ ] Key Management: generate Ed25519 and RSA ("New Key"), import, export the public key
 - [ ] Bundle Inter and JetBrains Mono (SIL OFL 1.1) with their `ATTRIBUTION.md` rows
 - [ ] About window with Slint's "About Slint" attribution (required by Slint's license)

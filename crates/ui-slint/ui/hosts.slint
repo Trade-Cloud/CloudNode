@@ -1,0 +1,303 @@
+import { Theme, Metrics, Chrome } from "theme.slint";
+import { Icons, Icon } from "icons.slint";
+import { TextButton, PanelHeader, SearchField, TextField } from "widgets.slint";
+
+// One server as Home lists it. Filled from Rust (`src/hosts.rs`).
+export struct HostEntry {
+    // The name typed in `ssh <alias>`.
+    alias: string,
+    // As much of `user@host:port` as the config says.
+    detail: string,
+}
+
+// The servers CloudNode knows: for now the ones ~/.ssh/config names. Rust reads them in the
+// background and fills this in.
+export global HostList {
+    // Every server found.
+    in-out property <[HostEntry]> found;
+    // The servers shown: those matching `query`.
+    in-out property <[HostEntry]> hosts;
+    in-out property <string> query;
+    in property <bool> loading: true;
+    // Where the servers come from, as people write it: `~/.ssh/config`.
+    in property <string> source: "~/.ssh/config";
+    // Why it couldn't be read; empty when it could.
+    in property <string> error;
+    // The selected server's name; empty for none.
+    in-out property <string> selected;
+    // The New Server form: open or not, and what is wrong with what was typed.
+    in-out property <bool> form-open;
+    in-out property <string> form-error;
+    // Read the servers again.
+    callback refresh();
+    // The search box changed: show the servers matching this.
+    callback search(string);
+    // Add a server from the form: name, address, user, port, as typed.
+    callback add(string, string, string, string);
+}
+
+// One server: its name, with `user@host:port` underneath. Click to select it.
+export component HostRow inherits Rectangle {
+    in property <HostEntry> host;
+    in property <bool> selected;
+    callback clicked();
+
+    height: Metrics.host-row-height;
+    border-radius: Metrics.radius-md;
+    border-width: 1px;
+    border-color: root.selected ? Theme.line-strong : transparent;
+    background: root.selected ? Theme.element : touch.has-hover ? Theme.surface : transparent;
+    accessible-role: button;
+    accessible-label: root.host.alias;
+
+    touch := TouchArea {
+        x: 0px;
+        y: 0px;
+        width: parent.width;
+        height: parent.height;
+        clicked => {
+            root.clicked();
+        }
+    }
+
+    HorizontalLayout {
+        padding-left: Metrics.space-sm;
+        padding-right: Metrics.space-sm;
+        spacing: Metrics.space-sm;
+
+        VerticalLayout {
+            alignment: center;
+
+            Icon {
+                width: Metrics.icon-size-small;
+                height: Metrics.icon-size-small;
+                commands: Icons.server;
+                tint: root.selected ? Theme.accent : Theme.ink;
+            }
+        }
+
+        VerticalLayout {
+            alignment: center;
+            spacing: 1px;
+            horizontal-stretch: 1;
+
+            Text {
+                text: root.host.alias;
+                color: Theme.ink-strong;
+                font-size: Metrics.font-body;
+                font-weight: 500;
+                overflow: elide;
+            }
+
+            Text {
+                text: root.host.detail;
+                color: Theme.ink;
+                font-size: Metrics.font-caption;
+                overflow: elide;
+            }
+        }
+    }
+}
+
+// Home: the list of servers, searchable, with "New Server" at the bottom.
+export component HomePanel inherits Rectangle {
+    VerticalLayout {
+        padding: Metrics.space-md;
+        // Below macOS's window buttons, which sit over the top of the sidebar.
+        padding-top: Chrome.titlebar-inset + Metrics.space-md;
+        spacing: Metrics.space-md;
+
+        SearchField {
+            placeholder: @tr("Search servers…");
+            edited(text) => {
+                HostList.search(text);
+            }
+        }
+
+        PanelHeader {
+            title: @tr("SERVERS");
+            menu-label: @tr("Server list options");
+            refresh => {
+                HostList.refresh();
+            }
+        }
+
+        if HostList.loading: Text {
+            text: @tr("Reading {}…", HostList.source);
+            color: Theme.faint;
+            font-size: Metrics.font-body;
+            wrap: word-wrap;
+        }
+
+        if !HostList.loading && HostList.error != "": Text {
+            text: HostList.error;
+            color: Theme.bad;
+            font-size: Metrics.font-body;
+            wrap: word-wrap;
+        }
+
+        if !HostList.loading && HostList.error == "" && HostList.found.length == 0: Text {
+            text: @tr("No servers yet. Add one, or name them in {}.", HostList.source);
+            color: Theme.faint;
+            font-size: Metrics.font-body;
+            wrap: word-wrap;
+        }
+
+        if !HostList.loading && HostList.found.length > 0 && HostList.hosts.length == 0: Text {
+            text: @tr("No servers match “{}”", HostList.query);
+            color: Theme.faint;
+            font-size: Metrics.font-body;
+            wrap: word-wrap;
+        }
+
+        // Takes the rest of the panel and scrolls.
+        scroller := Flickable {
+            vertical-stretch: 1;
+            content-width: self.width;
+            // Set by hand: a Flickable can't size itself from repeated children.
+            content-height: list.preferred-height;
+
+            list := VerticalLayout {
+                width: scroller.width;
+                spacing: 2px;
+
+                for entry in HostList.hosts: HostRow {
+                    host: entry;
+                    selected: entry.alias == HostList.selected;
+                    clicked => {
+                        HostList.selected = entry.alias;
+                    }
+                }
+            }
+        }
+
+        TextButton {
+            text: @tr("New Server");
+            primary: true;
+            clicked => {
+                HostList.form-error = "";
+                HostList.form-open = true;
+            }
+        }
+    }
+}
+
+// The New Server form, over the whole window. "Add Server" (or Enter in any field) hands what was
+// typed to Rust, which checks it, adds the server to the config and closes the form, or says what
+// to fix.
+export component AddServerDialog inherits Rectangle {
+    background: Theme.scrim;
+
+    // Clicks outside the card don't reach the window behind it.
+    TouchArea {
+        x: 0px;
+        y: 0px;
+        width: parent.width;
+        height: parent.height;
+    }
+
+    Rectangle {
+        x: (parent.width - self.width) / 2;
+        y: (parent.height - self.height) / 2;
+        width: Metrics.dialog-width;
+        height: form.preferred-height;
+        border-radius: Metrics.radius-lg;
+        border-width: 1px;
+        border-color: Theme.line-strong;
+        background: Theme.surface;
+
+        form := VerticalLayout {
+            padding: Metrics.space-xl;
+            spacing: Metrics.space-md;
+
+            Text {
+                text: @tr("New server");
+                color: Theme.ink-strong;
+                font-size: Metrics.font-title;
+                font-weight: 600;
+            }
+
+            Text {
+                text: @tr("CloudNode adds it to {} as a Host block, so ssh and other tools see it too.", HostList.source);
+                color: Theme.ink;
+                font-size: Metrics.font-caption;
+                wrap: word-wrap;
+            }
+
+            name := TextField {
+                label: @tr("Name");
+                placeholder: "web-prod-01";
+                accepted => {
+                    root.submit();
+                }
+            }
+
+            address := TextField {
+                label: @tr("Address");
+                placeholder: @tr("host.example.com or 203.0.113.10");
+                accepted => {
+                    root.submit();
+                }
+            }
+
+            HorizontalLayout {
+                spacing: Metrics.space-md;
+
+                user := TextField {
+                    label: @tr("User");
+                    placeholder: @tr("optional");
+                    horizontal-stretch: 1;
+                    accepted => {
+                        root.submit();
+                    }
+                }
+
+                port := TextField {
+                    label: @tr("Port");
+                    placeholder: "22";
+                    width: 96px;
+                    accepted => {
+                        root.submit();
+                    }
+                }
+            }
+
+            if HostList.form-error != "": Text {
+                text: HostList.form-error;
+                color: Theme.bad;
+                font-size: Metrics.font-caption;
+                wrap: word-wrap;
+            }
+
+            HorizontalLayout {
+                alignment: end;
+                spacing: Metrics.space-sm;
+
+                TextButton {
+                    text: @tr("Cancel");
+                    width: 96px;
+                    clicked => {
+                        HostList.form-open = false;
+                    }
+                }
+
+                TextButton {
+                    text: @tr("Add Server");
+                    primary: true;
+                    width: 120px;
+                    clicked => {
+                        root.submit();
+                    }
+                }
+            }
+        }
+    }
+
+    function submit() {
+        HostList.add(name.text, address.text, user.text, port.text);
+    }
+
+    init => {
+        name.focus-input();
+    }
+}

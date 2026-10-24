@@ -1,6 +1,6 @@
 [package]
 name = "cloudnode-ssh"
-description = "CloudNode SSH: sessions, host keys, sign-in and the remote shell (russh on Tokio)"
+description = "CloudNode SSH: the client config, and later sessions, host keys, sign-in and the remote shell (russh on Tokio)"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -12,3 +12,5 @@ workspace = true
 
 [dependencies]
 cloudnode-core = { workspace = true }
+cloudnode-fs = { workspace = true }
+thiserror = { workspace = true }

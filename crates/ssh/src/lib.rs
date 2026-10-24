@@ -1,6 +1,9 @@
 //! CloudNode SSH: connecting to a [`cloudnode_core::Host`] and running its shell.
 //!
-//! Design (milestone M2 in `ROADMAP.md`):
+//! Today this crate reads and adds to the user's SSH client config ([`config`]), which is where
+//! Home's server list comes from until the vault holds servers.
+//!
+//! Sessions, the design (milestone M2 in `ROADMAP.md`):
 //!
 //! - The protocol is `russh` (pure Rust, Apache-2.0) on the Tokio runtime, at 0.62.5 or newer
 //!   (earlier versions have published security fixes). No libssh2 or OpenSSL.
@@ -15,3 +18,5 @@
 //!   `window-change` requests.
 
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
+
+pub mod config;

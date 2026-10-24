@@ -22,6 +22,8 @@ export global Theme {
     in property <color> accent-hover;
     in property <color> on-accent;
     in property <color> selection;
+    // Dims the window behind a dialog.
+    in property <color> scrim;
     in property <color> good;
     in property <color> warn;
     in property <color> bad;
@@ -53,9 +55,9 @@ export global Metrics {
     out property <length> rail-item-height: 40px;
     out property <length> rail-button: 36px;
     out property <length> panel-width: 248px;
-    // Key Management scrolls beyond this, so the host lists above keep their room.
-    out property <length> keys-max-height: 300px;
     out property <length> card-padding: 10px;
+    out property <length> host-row-height: 44px;
+    out property <length> dialog-width: 380px;
     out property <length> row-height: 28px;
     out property <length> field-height: 32px;
     out property <length> button-height: 32px;
