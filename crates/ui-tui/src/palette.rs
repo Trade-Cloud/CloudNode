@@ -20,6 +20,7 @@ pub struct Palette {
     pub line: Color,
     pub accent: Color,
     pub on_accent: Color,
+    pub bad: Color,
 }
 
 impl Palette {
@@ -34,6 +35,7 @@ impl Palette {
             line: rgb(t.line_strong),
             accent: rgb(t.accent),
             on_accent: rgb(t.on_accent),
+            bad: rgb(t.bad),
         }
     }
 }

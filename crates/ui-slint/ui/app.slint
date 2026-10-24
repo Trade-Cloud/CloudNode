@@ -1,9 +1,11 @@
 import { Metrics } from "theme.slint";
 import { Shell } from "shell.slint";
 
-// Rust sets the colours on the Theme global (`theme::apply`), so the main file has to export it.
-// This re-export is the only mention of Theme here: the window's contents use it through Shell.
+// Rust sets the colours on the Theme global (`theme::apply`) and fills the key list (`keys.rs`),
+// so the main file has to export them. These re-exports are their only mention here: the
+// window's contents use them through Shell.
 export { Theme } from "theme.slint";
+export { KeyList, KeyEntry, KeyState } from "keys.slint";
 
 export component MainWindow inherits Window {
     title: "CloudNode";

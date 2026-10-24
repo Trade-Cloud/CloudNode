@@ -1,0 +1,73 @@
+import { Theme, Metrics } from "theme.slint";
+
+// What is known about one key, without its private half.
+export enum KeyState {
+    // Read from the public key file: `kind` and `fingerprint` are set.
+    readable,
+    // Only a private key file: nothing more is read until the key is used.
+    private-only,
+    // The public key file can't be read: `problem` says why.
+    unreadable,
+}
+
+// One key as Key Management lists it. Filled from Rust (`src/keys.rs`).
+export struct KeyEntry {
+    // The file name: `id_ed25519`.
+    name: string,
+    state: KeyState,
+    // `Ed25519`, `RSA 4096`, …
+    kind: string,
+    // `SHA256:…`, as `ssh-keygen -l` prints it.
+    fingerprint: string,
+    problem: string,
+}
+
+// The keys found on this machine. Rust reads them in the background and fills this in.
+export global KeyList {
+    in property <[KeyEntry]> keys;
+    in property <bool> loading: true;
+    // The folder read, as people write it: `~/.ssh`.
+    in property <string> folder: "~/.ssh";
+    // Why the folder couldn't be read; empty when it could.
+    in property <string> error;
+}
+
+// One key: its name and type, with the fingerprint (or what is wrong with it) underneath.
+export component KeyRow inherits Rectangle {
+    in property <KeyEntry> key;
+
+    VerticalLayout {
+        padding-top: Metrics.space-xs;
+        padding-bottom: Metrics.space-xs;
+        spacing: 2px;
+
+        HorizontalLayout {
+            spacing: Metrics.space-sm;
+
+            Text {
+                text: root.key.name;
+                color: Theme.ink;
+                font-size: Metrics.font-body;
+                overflow: elide;
+                horizontal-stretch: 1;
+            }
+
+            Text {
+                text: root.key.kind;
+                color: Theme.faint;
+                font-size: Metrics.font-caption;
+                vertical-alignment: center;
+            }
+        }
+
+        Text {
+            text: root.key.state == KeyState.readable ? root.key.fingerprint
+                : root.key.state == KeyState.private-only ? @tr("Private key only, no .pub file")
+                : root.key.problem;
+            color: root.key.state == KeyState.unreadable ? Theme.bad : Theme.faint;
+            font-family: Metrics.font-mono;
+            font-size: Metrics.font-caption;
+            overflow: elide;
+        }
+    }
+}

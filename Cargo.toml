@@ -20,6 +20,7 @@ todo = "warn"
 # internal
 cloudnode-core = { path = "crates/core" }
 cloudnode-vault = { path = "crates/vault" }
+cloudnode-keys = { path = "crates/keys" }
 cloudnode-ssh = { path = "crates/ssh" }
 cloudnode-term = { path = "crates/term" }
 cloudnode-ui-slint = { path = "crates/ui-slint" }
@@ -30,6 +31,13 @@ serde = { version = "1", features = ["derive"] }
 thiserror = "2"
 log = "0.4"
 env_logger = { version = "0.11", default-features = false, features = ["auto-color", "humantime"] }
+# The user's home folder, for ~/.ssh (std::env::home_dir is unreliable on some systems).
+dirs = "6"
+
+# keys: OpenSSH key files and fingerprints (RustCrypto, pure Rust, Apache-2.0 OR MIT). Only the
+# parsing features: "std" (files, comments, RSA) and "ecdsa" (ECDSA keys, through sec1); no
+# signing or encryption backends until CloudNode generates or uses keys itself.
+ssh-key = { version = "0.6.7", default-features = false, features = ["std", "ecdsa"] }
 
 # ui
 slint = "1.18"

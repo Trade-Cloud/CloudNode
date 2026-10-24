@@ -32,6 +32,7 @@ rules, attribution, the brand split), adapted to an SSH client.
 crates/
   core      cloudnode-core      L0  pure data, no I/O: hosts, groups, key descriptions, colour tokens
   vault     cloudnode-vault     L1  the encrypted vault: master password, Argon2id, AEAD, atomic writes
+  keys      cloudnode-keys      L1  SSH keys on this machine: reads ~/.ssh (public keys only) for Key Management
   ssh       cloudnode-ssh       L1  sessions on russh + Tokio: host keys, sign-in, PTY, resize
   term      cloudnode-term      L1  terminal emulation: escape sequences, cell grid, scrollback
   ui-slint  cloudnode-ui-slint  L2  the desktop interface: .slint layout (ui/), theme, terminal renderer
@@ -92,6 +93,9 @@ writes or URL opens triggered by escape sequences without the user's action).
   messages, crash reports or files outside the vault. Types that hold secrets implement a
   redacting `Debug` and zeroize on drop.
 - Files that hold secrets are written through `cloudnode_vault::atomic::write` (owner-only on Unix).
+- Reading `~/.ssh` (`cloudnode-keys`) touches public key files only. Of any other file it reads
+  the first few bytes, to tell a private key by its header; private key contents are read only
+  when a key is actually used, and never kept beyond that.
 - No hand-rolled cryptography. Use the RustCrypto crates named in section 3, with parameters kept
   in one place in `cloudnode-vault`.
 
@@ -157,7 +161,7 @@ when localisation lands; until then its strings stay English and short.
 | Desktop UI | Slint 1.18 | Native, declarative, light; royalty-free license for desktop apps (attribution required) |
 | Console UI | Ratatui 0.30 + Crossterm | The standard Rust TUI stack, pure Rust, works in every terminal |
 | SSH | `russh` ≥ 0.62.5 on Tokio | Pure Rust and async. `ssh2`/libssh2 pulls in C and OpenSSL, which complicates three-platform builds |
-| Keys | `russh::keys` (RustCrypto `ssh-key`) | Parses and writes OpenSSH key files for Ed25519, ECDSA and RSA; avoids using the `rsa` crate directly (open timing advisory, Marvin) |
+| Keys | RustCrypto `ssh-key` 0.6 (parsing only, `std` + `ecdsa`); `russh::keys` once sessions land | Reads OpenSSH public keys and SHA-256 fingerprints for every key type, pure Rust; avoids using the `rsa` crate directly (open timing advisory, Marvin) |
 | Vault crypto | Argon2id + XChaCha20-Poly1305 + `zeroize` (RustCrypto) | A KDF for the master password, a misuse-resistant AEAD with random nonces, pure Rust (unlike `ring`'s C and assembly) |
 | Storage | One encrypted vault file, atomic writes | Hundreds of hosts fit easily; no C. `sled` is unmaintained; `rusqlite` (bundled SQLite) can come later if queries or history need it |
 | Terminal | `alacritty_terminal` behind `cloudnode-term` | Mature VT parser and grid, Apache-2.0; the GUI draws the grid into a pixel buffer |

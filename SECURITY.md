@@ -25,6 +25,8 @@ logs first.
   can send to crash, hang or exhaust the client.
 - Terminal emulation: escape sequences that read or write the user's clipboard or files, open
   URLs, or spoof what the user sees.
+- Reading the user's `~/.ssh`: anything that makes CloudNode read private key contents while
+  listing keys, follow a path out of the folder unexpectedly, or hang or crash on an odd file.
 - Key import and export, and file paths.
 - Dependencies, packaging, signing and release integrity.
 

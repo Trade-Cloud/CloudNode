@@ -2,7 +2,7 @@
 
 **Stage: pre-alpha** · next: M1 (the vault)
 
-> **Last updated:** 2026-10-24 · **Change:** the colour palette (M6)
+> **Last updated:** 2026-10-24 · **Change:** Key Management lists the keys in `~/.ssh` (M4)
 
 Each milestone ends with `cargo xtask ci` green and the change described here. Tick a box in the
 same change that lands the work.
@@ -42,7 +42,8 @@ same change that lands the work.
 
 - [ ] Title bar with the native macOS window buttons and session tabs; Windows and Linux equivalents
 - [ ] Sidebar: search over hosts and keys, Favorites, Connected, groups, host editor
-- [ ] Key Management: generate Ed25519 and RSA, import, export the public key, copy fingerprint
+- [x] Key Management lists the keys in `~/.ssh` (name, type, SHA-256 fingerprint; private-only and unreadable keys marked), in the window and the console
+- [ ] Key Management: generate Ed25519 and RSA, import, export the public key, copy fingerprint, refresh the list
 - [ ] Bundle Inter and JetBrains Mono (SIL OFL 1.1) with their `ATTRIBUTION.md` rows
 - [ ] About window with Slint's "About Slint" attribution (required by Slint's license)
 - [ ] Log file with rotation in the data folder; single running instance

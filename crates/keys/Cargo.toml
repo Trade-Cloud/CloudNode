@@ -1,0 +1,17 @@
+[package]
+name = "cloudnode-keys"
+description = "CloudNode keys: the SSH keys on the user's machine (~/.ssh), read for Key Management"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+cloudnode-core = { workspace = true }
+dirs = { workspace = true }
+ssh-key = { workspace = true }
+thiserror = { workspace = true }
